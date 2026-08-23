@@ -18,7 +18,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // return res
 
   const { fullName, email, username, password } = req.body;
-//   console.log('email: ', email);
+  // console.log('email: ', email);
 
   if (
     [fullName, email, username, password].some((field) => field?.trim() === '')
@@ -40,11 +40,15 @@ const registerUser = asyncHandler(async (req, res) => {
   console.log(req.files);
 
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
-//   const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  //   const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
   let coverImageLocalPath;
-  if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
-    coverImageLocalPath = req.files.coverImage[0].path
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files.coverImage[0].path;
   }
 
   if (!avatarLocalPath) {
@@ -80,4 +84,38 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdUser, 'User registered Successfully'));
 });
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+    // Req body -> data
+    // Username or Email
+    // Find the user
+    // Password check
+    // Acess and refresh token
+    // Send secure cookies
+    
+    const {email, username, password } = req.body
+
+    if (!username || !email) {
+        throw new ApiError(400, "Username or Email is required!")
+    }
+
+    const user = await User.findOne({
+        $or: [{username}, {email}]
+    })
+
+    if(!user){
+        throw new ApiError(404, "User does not exist!")
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password)
+
+    if(!isPasswordValid){
+        throw new ApiError(401, "Invalid user credentials!")
+    }
+
+
+})
+
+export {
+    registerUser,
+    loginUser
+};
