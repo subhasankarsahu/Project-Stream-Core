@@ -6,6 +6,23 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { create } from 'axios';
 import { log } from 'console';
 
+const generateAccessAndRefreshTokens = async(userId) => {
+    try {
+        const user = await User.findById(userId)
+        const accessToken = user.generateAccessAndRefreshToken()
+        const refreshToken = user.generateRefreshToken()
+
+        user.refreshToken = refreshToken
+        await user.save({validateBeforeSave: false })
+
+        return {accessToken, refreshToken};
+
+
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating refresh and access token")
+    }
+}
+
 const registerUser = asyncHandler(async (req, res) => {
   // Get user details from frontend
   // Validation - not empty
@@ -111,6 +128,8 @@ const loginUser = asyncHandler(async (req, res) => {
     if(!isPasswordValid){
         throw new ApiError(401, "Invalid user credentials!")
     }
+
+    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
 
 
 })
