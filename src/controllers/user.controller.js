@@ -3,13 +3,10 @@ import { ApiError } from '../utils/ApiError.js';
 import { User } from '../models/user.model.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
-import { create } from 'axios';
-import { log } from 'console';
-
 const generateAccessAndRefreshTokens = async(userId) => {
     try {
         const user = await User.findById(userId)
-        const accessToken = user.generateAccessAndRefreshToken()
+        const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
 
         user.refreshToken = refreshToken
@@ -98,7 +95,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, 'User registered Successfully'));
+    .json(new ApiResponse(201, 'User registered Successfully', createdUser));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -111,7 +108,7 @@ const loginUser = asyncHandler(async (req, res) => {
     
     const {email, username, password } = req.body
 
-    if (!username || !email) {
+    if (!username && !email) {
         throw new ApiError(400, "Username or Email is required!")
     }
 
@@ -142,15 +139,15 @@ const loginUser = asyncHandler(async (req, res) => {
 
     return res
     .status(200)
-    .cookie("acessToken", accessToken, options)
+    .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(
         new ApiResponse(
             200,
+            "User logged in successfully",
             {
                 user: loggedinUser, accessToken, refreshToken
-            },
-            "User logged in successfully"
+            }
         )
     )
 
