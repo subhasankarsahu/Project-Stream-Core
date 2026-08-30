@@ -3,7 +3,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { User } from '../models/user.model.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
-import { trusted } from 'mongoose';
+import jwt from 'jsonwebtoken';
 
 const generateAccessAndRefreshTokens = async(userId) => {
     try {
@@ -97,7 +97,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, 'User registered Successfully', createdUser));
+    .json(new ApiResponse(201, createdUser, 'User registered Successfully'));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -130,8 +130,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
 
-    const loggedinUser = await User.findById(user._id).
-    select("-password -refreshToken")
+    const loggedinUser = await User.findById(user._id).select("-password -refreshToken")
 
     // Cookies design
     const options = {
@@ -204,13 +203,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   
     const options = {
       httpOnly: true,
-      secure: trusted
+      secure: true
     }
   
     const {accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
   
     return res
-    .res(200)
+    .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", newRefreshToken, options)
     .json(
@@ -249,14 +248,14 @@ const getCurrentUser = asyncHandler(async(req, res) =>{
   .json(new ApiResponse(200, req.user, "Current User Fetched successfully"))
 })
 
-const upadateAccountDetails = asyncHandler(async(req, res) => {
+const updateAccountDetails = asyncHandler(async(req, res) => {
   const {fullName, email} = req.body
 
   if(!fullName || !email){
     throw new ApiError(400, "All fields are required")
   }
   
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -297,7 +296,7 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
   return res
   .status(200)
   .json(
-    new ApiResponse(200, "Avatar Updated Successfully")
+    new ApiResponse(200, user, "Avatar Updated Successfully")
   )
 })
 
@@ -326,8 +325,77 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
   return res
   .status(200)
   .json(
-    new ApiResponse(200, "Cover Image Updated Successfully")
+    new ApiResponse(200, user, "Cover Image Updated Successfully")
   )
+})
+
+const getUserChannelProfile = asyncHandler(async(req, res) => {
+  const {username} = req.params
+
+  if (!username?.trim()){
+    throw new ApiError(400, "username is missing!")
+  }
+
+  const channel = await User.aggregate([
+    {
+      $match: {
+        username: username?.toLowerCase()
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers"
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo"
+      }
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers"
+        },
+        channelsSubscribedToCount: {
+          $size: "$subscribedTo"
+        },
+        isSubscribed: {
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            then: true,
+            else: false
+          }
+        }
+      }
+    },
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelsSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1
+      }
+    }
+  ])
+
+  if (!channel?.length) {
+    throw new ApiError(404, "Channel does not exist")
+  }
+
+  return res
+  .status(200)
+  .json(new ApiResponse(200, channel[0], "Channel profile fetched successfully"))
 })
 
 export {
@@ -337,7 +405,8 @@ export {
     refreshAccessToken,
     changeCurrentPassword,
     getCurrentUser,
-    upadateAccountDetails,
+    updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    getUserChannelProfile
 };
