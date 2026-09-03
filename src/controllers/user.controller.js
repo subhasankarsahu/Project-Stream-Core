@@ -99,7 +99,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, createdUser, 'User registered Successfully'));
+    .json(new ApiResponse(201, 'User registered Successfully', createdUser));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -161,8 +161,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1,
       },
     },
     {
@@ -179,7 +179,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .status(200)
     .clearCookie('accessToken', options)
     .clearCookie('refreshToken', options)
-    .json(new ApiResponse(200, {}, 'User logged out successfully'));
+    .json(new ApiResponse(200, 'User logged out successfully', {}));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -191,12 +191,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 
   try {
-    const decodedTOken = jwt.verify(
+    const decodedToken = jwt.verify(
       incomingRefreshToken,
-      process.env.ACCESS_TOKEN_SECRET
+      process.env.REFRESH_TOKEN_SECRET
     );
 
-    const user = await User.findById(decodedTOken?._id);
+    const user = await User.findById(decodedToken?._id);
 
     if (!user) {
       throw new ApiError(401, 'Invalid refresh token');
@@ -211,7 +211,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true,
     };
 
-    const { accessToken, newRefreshToken } =
+    const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefreshTokens(user._id);
 
     return res
@@ -219,11 +219,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       .cookie('accessToken', accessToken, options)
       .cookie('refreshToken', newRefreshToken, options)
       .json(
-        new ApiResponse(
-          200,
-          { accessToken, newRefreshToken: newRefreshToken },
-          'Access token refreshed'
-        )
+        new ApiResponse(200, 'Access token refreshed', {
+          accessToken,
+          refreshToken: newRefreshToken,
+        })
       );
   } catch (error) {
     throw new ApiError(401, 'Invalid Refresh Token');
@@ -245,13 +244,13 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, 'Password Changed Successfully'));
+    .json(new ApiResponse(200, 'Password Changed Successfully', {}));
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(new ApiResponse(200, req.user, 'Current User Fetched successfully'));
+    .json(new ApiResponse(200, 'Current User Fetched successfully', req.user));
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -274,7 +273,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user, 'Account details updated successfully'));
+    .json(new ApiResponse(200, 'Account details updated successfully', user));
 });
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
@@ -289,7 +288,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Error while uploading avatar');
   }
 
-  await User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -301,7 +300,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user, 'Avatar Updated Successfully'));
+    .json(new ApiResponse(200, 'Avatar Updated Successfully', user));
 });
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
@@ -328,7 +327,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user, 'Cover Image Updated Successfully'));
+    .json(new ApiResponse(200, 'Cover Image Updated Successfully', user));
 });
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { username } = req.params;
@@ -397,7 +396,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200, channel[0], 'Channel profile fetched successfully')
+      new ApiResponse(200, 'Channel profile fetched successfully', channel[0])
     );
 });
 
@@ -445,13 +444,10 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   ]);
 
   return res
-  .status
-  .json(
-    new ApiResponse(
-      200,
-      user[0].watchHistory
-    )
-  )
+    .status(200)
+    .json(
+      new ApiResponse(200, 'Watch history fetched successfully', user[0]?.watchHistory ?? [])
+    );
 });
 
 export {
