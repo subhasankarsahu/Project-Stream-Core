@@ -11,7 +11,11 @@ const getChannelStats = asyncHandler(async (req, res) => {
         owner: req.user._id
     })
 
-    const totalSubscribers = await Video.aggregate([
+    const totalSubscribers = await Subscription.countDocuments({
+        channel: req.user._id
+    });
+
+    const viewsData = await Video.aggregate([
         {
             $match: {
                 owner: new mongoose.Types.ObjectId(req.user._id)
@@ -53,25 +57,20 @@ const getChannelStats = asyncHandler(async (req, res) => {
         {
             $group: {
                 _id: null,
-                totalLikes: {
-                    $sum: "$likesCount"
+                    totalLikes: {
+                        $sum: "$likeCount"
                 }
             }
         }
     ]);
 
-    const totalLikes = likes[0]?.totalLikes || 0;
+    const totalLikes = likeData[0]?.totalLikes || 0;
 
     return res.status(200).json(
         new ApiResponse(
             200,
-            {
-                totalVideos,
-                totalSubscribers,
-                totalViews,
-                totalLikes
-            },
-            "Channel stats fetched successfully"
+            "Channel stats fetched successfully",
+            { totalVideos, totalSubscribers, totalViews, totalLikes }
         )
     );
 });
@@ -89,8 +88,8 @@ async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            videos,
-            "Channel videos fetched successfully"
+            "Channel videos fetched successfully",
+            videos
         )
     );
 });

@@ -2,6 +2,24 @@ import "dotenv/config";
 import { app } from "./app.js";
 import connectDB from "./db/index.js";
 
+const requiredEnvironmentVariables = [
+    "MONGODB_URI",
+    "ACCESS_TOKEN_SECRET",
+    "REFRESH_TOKEN_SECRET",
+    "ACCESS_TOKEN_EXPIRATION",
+    "REFRESH_TOKEN_EXPIRATION",
+];
+
+const missingEnvironmentVariables = requiredEnvironmentVariables.filter(
+    (name) => !process.env[name]
+);
+
+if (missingEnvironmentVariables.length > 0) {
+    throw new Error(
+        `Missing required environment variables: ${missingEnvironmentVariables.join(", ")}`
+    );
+}
+
 connectDB()
 .then(
     () => {

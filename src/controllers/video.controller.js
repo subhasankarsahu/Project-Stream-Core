@@ -31,6 +31,9 @@ const getAllVideos = asyncHandler(async (req, res) => {
     }
 
     if(userId) {
+        if (!isValidObjectId(userId)) {
+            throw new ApiError(400, "Invalid user id");
+        }
         matchStage.owner = new mongoose.Types.ObjectId(userId)
     }
 
@@ -57,6 +60,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
         aggregate,
         options
     );
+
+    return res.status(200).json(
+        new ApiResponse(200, "Videos fetched successfully", videos)
+    );
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -73,7 +80,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Video file is required");
     }
 
-    if(!videoLocalPath){
+    if(!thumbnailLocalPath){
         throw new ApiError(400, "Thumbnail is required")
     }
 
@@ -96,11 +103,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     return res
         .status(201)
         .json(
-            new ApiResponse(
-                201,
-                video,
-                "Video published successfully"
-            )
+            new ApiResponse(201, "Video published successfully", video)
         );
 });
 
@@ -112,18 +115,14 @@ const getVideoById = asyncHandler(async (req, res) => {
     }
 
     const video = await Video.findById(videoId)
-        .populate("owner", "username fullName avatar")
+        .populate("owner", "username fullname avatar")
 
     if(!video) {
         throw new ApiError(404, "Video not found")
     }
 
     return res.status(200).json(
-        new ApiResponse(
-            200,
-            video,
-            "Video fetched successfully"
-        )
+            new ApiResponse(200, "Video fetched successfully", video)
     );
 });
 
@@ -161,7 +160,7 @@ const updateVideo = asyncHandler(async (req, res) => {
         videoId,
         {
             $set: {
-                tile: title || video.title,
+                title: title || video.title,
                 description: description || video.description,
                 thumbnail: thumbnailUrl
             }            
@@ -174,11 +173,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
-                200,
-                updatedVideo,
-                "Video updated successfully"
-            )
+            new ApiResponse(200, "Video updated successfully", updatedVideo)
         );
 })
 
@@ -204,11 +199,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(
-                200,
-                {},
-                "Video deleted successfully"
-            )
+            new ApiResponse(200, "Video deleted successfully", {})
         );
     //TODO: delete video
 });
@@ -230,16 +221,12 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Unauthorized");
     }
 
-    Video.isPublished = !video.isPublished;
+    video.isPublished = !video.isPublished;
 
     await video.save();
 
     return res.status(200).json(
-        new ApiResponse(
-            200,
-            video,
-            "Publish status updated"
-        )
+        new ApiResponse(200, "Publish status updated", video)
     );
 })
 

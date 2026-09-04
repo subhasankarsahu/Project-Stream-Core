@@ -4,7 +4,12 @@ import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 
-const getVideoComments = asyncHandler(async (req, res) => {if (!mongoose.isValidObjectId(videoId)) {
+const getVideoComments = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
+
+    if (!mongoose.isValidObjectId(videoId)) {
         throw new ApiError(400, "Invalid video id");
     }
 
@@ -13,7 +18,7 @@ const getVideoComments = asyncHandler(async (req, res) => {if (!mongoose.isValid
     })
     .populate(
         "owner",
-        "username fullName avatar"
+        "username fullname avatar"
     )
     .sort({
         createdAt: -1
@@ -24,8 +29,8 @@ const getVideoComments = asyncHandler(async (req, res) => {if (!mongoose.isValid
     return res.status(200).json(
         new ApiResponse(
             200,
-            comments,
-            "Comments fetched successfully"
+            "Comments fetched successfully",
+            comments
         )
     );
 });
@@ -54,8 +59,8 @@ const addComment = asyncHandler(async (req, res) => {
     return res.status(201).json(
         new ApiResponse(
             201,
-            comment,
-            "Comment added successfully"
+            "Comment added successfully",
+            comment
         )
     );
 });
@@ -105,8 +110,8 @@ const updateComment = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            comment,
-            "Comment updated successfully"
+            "Comment updated successfully",
+            comment
         )
     );
 });
@@ -148,8 +153,8 @@ const deleteComment = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            {},
-            "Comment deleted successfully"
+            "Comment deleted successfully",
+            {}
         )
     );
 });

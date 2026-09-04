@@ -5,15 +5,17 @@ import jwt from "jsonwebtoken";
 
 export const verifyJWT = asyncHandler(async(req, _, next) => {
     try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","")
+        const authorization = req.header("Authorization")
+        const token = req.cookies?.accessToken ||
+            (authorization?.startsWith("Bearer ") ? authorization.slice(7) : null)
     
         if(!token){
             throw new ApiError(401, "Unauthorized request");
         }
     
-        const decodedTOken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
     
-        const user = await User.findById(decodedTOken?._id).select("-password -refreshToken")
+        const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
     
         if(!user){
             // TODO: discuss about frontend

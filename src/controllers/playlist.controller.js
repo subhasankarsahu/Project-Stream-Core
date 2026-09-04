@@ -3,6 +3,7 @@ import {Playlist} from "../models/playlist.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
+import {Video} from "../models/video.model.js"
 
 
 const createPlaylist = asyncHandler(async (req, res) => {
@@ -24,8 +25,8 @@ const createPlaylist = asyncHandler(async (req, res) => {
     return res.status(201).json(
         new ApiResponse(
             201,
-            playlist,
-            "Playlist created successfully"
+            "Playlist created successfully",
+            playlist
         )
     );
 })
@@ -44,8 +45,8 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            playlists,
-            "Playlists fetched successfully"
+            "Playlists fetched successfully",
+            playlists
         )
     );
 });
@@ -77,8 +78,8 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            playlist,
-            "Playlist fetched successfully"
+            "Playlist fetched successfully",
+            playlist
         )
     );
 })
@@ -115,6 +116,10 @@ asyncHandler(async (req, res) => {
         );
     }
 
+    if (!(await Video.exists({ _id: videoId }))) {
+        throw new ApiError(404, "Video not found");
+    }
+
     const updatedPlaylist =
         await Playlist.findByIdAndUpdate(
             playlistId,
@@ -131,8 +136,8 @@ asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            updatedPlaylist,
-            "Video added successfully"
+            "Video added successfully",
+            updatedPlaylist
         )
     );
 });
@@ -185,8 +190,8 @@ asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            updatedPlaylist,
-            "Video removed successfully"
+            "Video removed successfully",
+            updatedPlaylist
         )
     );
 });
@@ -230,8 +235,8 @@ async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            {},
-            "Playlist deleted successfully"
+            "Playlist deleted successfully",
+            {}
         )
     );
 });
@@ -289,8 +294,8 @@ async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            updatedPlaylist,
-            "Playlist updated successfully"
+            "Playlist updated successfully",
+            updatedPlaylist
         )
     );
 });
