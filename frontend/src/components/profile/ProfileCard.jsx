@@ -1,0 +1,5 @@
+import { Mail, UserRound } from "lucide-react"
+
+export function ProfileCard({ user }) {
+  return <section className="overflow-hidden rounded-xl border border-line bg-surface"><div className="h-28 bg-line">{user.coverImage && <img src={user.coverImage} alt="" className="h-full w-full object-cover" />}</div><div className="p-5"><div className="-mt-14 flex items-end gap-4"><div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-surface bg-line text-muted">{user.avatar ? <img src={user.avatar} alt="" className="h-full w-full object-cover" /> : <UserRound size={24} />}</div><div className="min-w-0 pb-1"><h2 className="text-lg font-bold">{user.fullname || user.fullName || user.username}</h2><p className="text-sm text-muted">@{user.username}</p></div></div><div className="mt-5 space-y-3 border-t border-line pt-5 text-sm text-muted"><p className="flex items-center gap-3"><Mail size={16} />{user.email}</p><p>Member since {user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { month: "long", year: "numeric" }) : "StreamCore"}</p></div></div></section>
+}

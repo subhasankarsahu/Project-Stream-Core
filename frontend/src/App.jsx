@@ -8,6 +8,10 @@ import { LoginPage } from "./pages/LoginPage"
 import { RegisterPage } from "./pages/RegisterPage"
 import { WatchPage } from "./pages/WatchPage"
 import { StudioPage } from "./pages/StudioPage"
+import { ChannelPage } from "./pages/ChannelPage"
+import { ProfilePage } from "./pages/ProfilePage"
+import { HistoryPage } from "./pages/HistoryPage"
+import { LikedVideosPage } from "./pages/LikedVideosPage"
 
 export function App() {
   return <Routes>
@@ -16,6 +20,10 @@ export function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/watch/:videoId" element={<WatchPage />} />
+        <Route path="/channel/:username" element={<ChannelPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/liked" element={<LikedVideosPage />} />
         <Route path="/studio" element={<DashboardLayout />}>
           <Route index element={<StudioPage />} />
         </Route>
