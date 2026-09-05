@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./routes/ProtectedRoute"
 import { GuestRoute } from "./routes/GuestRoute"
 import { AuthLayout, DashboardLayout, MainLayout } from "./components/layout"
 import { HomePage } from "./pages/HomePage"
+import { SearchResultsPage } from "./pages/SearchResultsPage"
 import { LoginPage } from "./pages/LoginPage"
 import { RegisterPage } from "./pages/RegisterPage"
 import { WatchPage } from "./pages/WatchPage"
@@ -13,6 +14,7 @@ export function App() {
     <Route element={<ProtectedRoute />}>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/search" element={<SearchResultsPage />} />
         <Route path="/watch/:videoId" element={<WatchPage />} />
         <Route path="/studio" element={<DashboardLayout />}>
           <Route index element={<StudioPage />} />

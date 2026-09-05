@@ -1,0 +1,7 @@
+import { ChevronLeft, ChevronRight } from "lucide-react"
+
+export function Pagination({ page, totalPages, onChange, isFetching }) {
+  if (!totalPages || totalPages <= 1) return null
+  const pages = Array.from({ length: totalPages }, (_, index) => index + 1).filter((value) => value === 1 || value === totalPages || Math.abs(value - page) <= 1)
+  return <nav className="mt-10 flex items-center justify-center gap-2" aria-label="Pagination"><button disabled={page === 1 || isFetching} onClick={() => onChange(page - 1)} className="rounded-lg border border-line p-2 text-muted hover:bg-surface hover:text-white disabled:cursor-not-allowed disabled:opacity-40" aria-label="Previous page"><ChevronLeft size={18} /></button>{pages.map((value, index) => <span key={value} className="flex items-center gap-2">{index > 0 && pages[index - 1] !== value - 1 && <span className="text-muted">...</span>}<button onClick={() => onChange(value)} disabled={isFetching} className={`h-9 min-w-9 rounded-lg px-2 text-sm font-semibold ${value === page ? "bg-white text-ink" : "text-muted hover:bg-surface hover:text-white"}`}>{value}</button></span>)}<button disabled={page === totalPages || isFetching} onClick={() => onChange(page + 1)} className="rounded-lg border border-line p-2 text-muted hover:bg-surface hover:text-white disabled:cursor-not-allowed disabled:opacity-40" aria-label="Next page"><ChevronRight size={18} /></button></nav>
+}

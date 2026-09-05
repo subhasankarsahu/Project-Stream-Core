@@ -9,7 +9,7 @@ export function SearchBar() {
   const submit = (event) => {
     event.preventDefault()
     const nextQuery = query.trim()
-    navigate(nextQuery ? `/?query=${encodeURIComponent(nextQuery)}` : "/")
+    navigate(nextQuery ? `/search?query=${encodeURIComponent(nextQuery)}` : "/")
   }
   return <form onSubmit={submit} role="search" className="flex h-10 w-full max-w-xl items-center overflow-hidden rounded-full border border-line bg-surface focus-within:border-muted">
     <input value={query} onChange={(event) => setQuery(event.target.value)} className="min-w-0 flex-1 bg-transparent px-5 text-sm text-white outline-none placeholder:text-muted" placeholder="Search videos" aria-label="Search videos" />
