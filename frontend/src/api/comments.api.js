@@ -1,0 +1,2 @@
+import http, { unwrap } from "./http"
+export const commentsApi = { list: async (videoId, params) => unwrap(await http.get(`/comments/${videoId}`, { params })), create: async (videoId, payload) => unwrap(await http.post(`/comments/${videoId}`, payload)), update: async (commentId, payload) => unwrap(await http.patch(`/comments/c/${commentId}`, payload)), remove: async (commentId) => unwrap(await http.delete(`/comments/c/${commentId}`)) }
