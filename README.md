@@ -1,16 +1,25 @@
 # StreamCore
 
-A backend service for a video-sharing platform built with Node.js, Express.js, MongoDB, and Cloudinary.
+StreamCore is a full-stack video sharing platform built to explore and implement modern web application architecture. The project focuses primarily on backend engineering concepts such as authentication, authorization, media handling, API design, database relationships, and scalable application structure, while also providing a complete React-based frontend experience.
 
-StreamCore was developed as a hands-on learning project to explore how modern backend systems are designed and implemented. The project focuses on authentication, media management, user interactions, and scalable API architecture while following industry-standard development practices.
+The goal of this project was to move beyond tutorial-level CRUD applications and gain hands-on experience building a production-style backend system with real-world patterns and workflows.
 
 ---
 
 ## Overview
 
-StreamCore provides the backend infrastructure required for a video-sharing platform. It exposes RESTful APIs for user management, video publishing, subscriptions, playlists, comments, likes, and creator analytics.
+StreamCore provides the core functionality expected from a modern video platform:
 
-The primary goal of this project was to gain practical experience building a production-style backend application while understanding how different components of a modern web platform interact.
+* User authentication and account management
+* Video upload and management
+* Channel subscriptions
+* Comments and likes
+* Playlists
+* User activity tracking
+* Creator dashboard and analytics
+* Media storage and delivery
+
+The application follows a modular architecture with a clear separation of concerns between routes, controllers, middleware, services, and data models.
 
 ---
 
@@ -20,43 +29,37 @@ The primary goal of this project was to gain practical experience building a pro
 
 * User registration and login
 * JWT-based authentication
-* Access token and refresh token workflow
-* Secure logout mechanism
-* Protected API routes
+* Access and refresh token flow
+* Protected routes
+* Secure cookie handling
 * Password management
+* Current user sessions
 
 ### User Management
 
-* User profile management
-* Avatar upload support
-* Cover image upload support
-* Account updates
+* Profile management
+* Avatar uploads
+* Cover image uploads
 * Watch history tracking
+* Channel profile pages
 
-### Video Management
+### Video Platform
 
 * Video publishing
-* Thumbnail uploads
-* Video updates
-* Video deletion
-* Publish and unpublish functionality
-* Video discovery and retrieval
+* Thumbnail management
+* Video updates and deletion
+* Publish/unpublish functionality
+* Video browsing and discovery
+* Channel-specific content
 
-### Channel Features
+### Community Features
 
-* Channel profiles
-* Subscriber management
-* Subscription tracking
-* Creator statistics
-
-### Comments & Interactions
-
-* Comment creation
-* Comment updates
-* Comment deletion
 * Video likes
 * Comment likes
 * Tweet likes
+* Video comments
+* Creator subscriptions
+* User engagement tracking
 
 ### Playlists
 
@@ -66,28 +69,19 @@ The primary goal of this project was to gain practical experience building a pro
 * Add videos to playlists
 * Remove videos from playlists
 
-### Tweets
-
-* Create tweets
-* Update tweets
-* Delete tweets
-* Retrieve user tweets
-
-### Analytics
+### Dashboard
 
 * Channel statistics
-* Total views
 * Subscriber counts
-* Like counts
-* Uploaded video metrics
+* Video analytics
+* Creator activity overview
 
 ### Media Handling
 
 * Cloudinary integration
-* File uploads using Multer
-* Avatar management
-* Cover image management
-* Video and thumbnail uploads
+* Multer-based file uploads
+* Image processing workflow
+* Video asset management
 
 ---
 
@@ -106,19 +100,56 @@ The primary goal of this project was to gain practical experience building a pro
 ### Authentication
 
 * JSON Web Tokens (JWT)
-* HTTP-only Cookies
+* Refresh Token Strategy
+* Cookie-based Authentication
 
-### File Storage
+### Media Storage
 
 * Cloudinary
 * Multer
 
-### Utilities
+### Frontend
 
-* dotenv
+* React
+* Vite
+* React Router
+* Axios
+* Tailwind CSS
+* TanStack Query
+
+### Additional Tools
+
+* bcrypt
 * cookie-parser
 * cors
-* bcrypt
+* dotenv
+
+---
+
+## Architecture
+
+The project follows a layered backend architecture:
+
+```text
+Client
+   │
+   ▼
+Routes
+   │
+   ▼
+Middlewares
+   │
+   ▼
+Controllers
+   │
+   ▼
+Models
+   │
+   ▼
+MongoDB
+```
+
+Authentication, file uploads, request validation, error handling, and API responses are implemented using reusable middleware and utility layers.
 
 ---
 
@@ -127,39 +158,25 @@ The primary goal of this project was to gain practical experience building a pro
 ```text
 src/
 │
-├── controllers/      # Application business logic
-├── models/           # Database schemas and models
-├── routes/           # API route definitions
-├── middlewares/      # Authentication and request middleware
-├── utils/            # Helper utilities and shared modules
-├── db/               # Database connection configuration
+├── controllers/
+├── models/
+├── routes/
+├── middlewares/
+├── utils/
+├── db/
 │
-├── app.js            # Express application configuration
-└── index.js          # Application entry point
+├── app.js
+└── index.js
 ```
 
 ---
 
-## Getting Started
+## Environment Variables
 
-### Clone the Repository
-
-```bash
-git clone https://github.com/subhasankarsahu/Project-Stream-Core.git
-```
-
-### Install Dependencies
-
-```bash
-npm install
-```
-
-### Configure Environment Variables
-
-Create a `.env` file in the project root.
+Create a `.env` file in the root directory:
 
 ```env
-PORT=5000
+PORT=
 
 MONGODB_URI=
 
@@ -176,7 +193,35 @@ CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 ```
 
-### Start Development Server
+---
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/subhasankarsahu/Project-Stream-Core.git
+```
+
+Move into the project directory:
+
+```bash
+cd Project-Stream-Core
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Configure environment variables:
+
+```bash
+cp .env.example .env
+```
+
+Start the development server:
 
 ```bash
 npm run dev
@@ -186,9 +231,10 @@ npm run dev
 
 ## API Modules
 
-The application is organized into the following API modules:
+The backend is organized into the following modules:
 
 * Users
+* Authentication
 * Videos
 * Comments
 * Likes
@@ -198,7 +244,7 @@ The application is organized into the following API modules:
 * Dashboard
 * Healthcheck
 
-Base URL:
+All APIs are versioned under:
 
 ```text
 /api/v1
@@ -206,54 +252,84 @@ Base URL:
 
 ---
 
-## Development Goals
+## Frontend
 
-This project was built to strengthen understanding of:
+The frontend provides a complete user experience built on top of the backend APIs.
 
-* REST API design
-* Authentication and authorization workflows
-* JWT token management
-* Database modeling with MongoDB
-* Mongoose aggregation pipelines
-* Middleware architecture
-* File upload handling
-* Cloudinary integration
-* Backend project organization
-* Scalable application structure
+Key frontend features include:
 
-Rather than being developed as a commercial product, StreamCore was created as a practical learning exercise focused on applying backend engineering concepts in a realistic project environment.
+* Authentication flows
+* Video browsing and viewing
+* Creator channels
+* Video uploads
+* Dashboard analytics
+* Playlist management
+* Responsive layouts
+* Protected routes
+* State management and API integration
+
+While the project includes a complete frontend application, the primary focus remains on backend system design, API development, authentication flows, media handling, and database architecture.
 
 ---
 
-## Future Enhancements
+## Learning Objectives
+
+This project was developed as a practical learning exercise to gain hands-on experience with modern backend development and full-stack application architecture.
+
+Key areas explored include:
+
+* REST API Design
+* Authentication & Authorization
+* JWT Access and Refresh Token Flows
+* MongoDB Data Modeling
+* Mongoose Aggregation Pipelines
+* Middleware Architecture
+* File Upload Workflows
+* Cloudinary Integration
+* Error Handling Strategies
+* Backend Project Structure
+* Scalable Application Design
+* Frontend and Backend Integration
+
+The emphasis was placed on understanding how production-oriented backend systems are organized and implemented rather than simply replicating isolated features.
+
+---
+
+## Future Improvements
 
 Potential areas for future development include:
 
-* Redis caching
-* WebSocket-based real-time features
+* Redis-based caching
+* WebSocket support
 * Background job processing
 * Automated testing
-* Docker support
-* API documentation using Swagger/OpenAPI
-* PostgreSQL implementation
+* Docker containerization
 * CI/CD pipelines
+* API documentation with Swagger/OpenAPI
+* PostgreSQL implementation
+* Advanced analytics
 * Search and recommendation systems
-* Performance optimization and monitoring
 
 ---
 
-## Contributing
+## Disclaimer
 
-Contributions, suggestions, and feedback are welcome. Feel free to open an issue or submit a pull request.
+This project was built for educational and portfolio purposes to practice and reinforce full-stack development concepts. It is intended as a learning-focused implementation of production-inspired architecture and patterns rather than a commercial-grade platform.
 
 ---
 
-## Acknowledgments
+## Acknowledgements
 
-This project was inspired by backend development learning resources and expanded through independent implementation and feature development to reinforce practical software engineering concepts.
+This project was originally inspired by and developed while following the backend development series by Hitesh Choudhary.
+
+The foundational architecture, concepts, and learning approach were derived from the course material. The project was further extended, completed, and customized as part of a personal learning journey to gain practical experience in backend and full-stack application development.
+
+Special thanks to Hitesh Choudhary for creating accessible and industry-oriented educational content that made this project possible.
 
 ---
 
 ## License
 
-This project is released under the MIT License.
+This repository is intended for educational and portfolio purposes only.
+
+Please refer to the original course and learning materials by Hitesh Choudhary before reusing any course-specific content. All additional implementations, extensions, and modifications in this repository were created as part of personal learning and practice.
