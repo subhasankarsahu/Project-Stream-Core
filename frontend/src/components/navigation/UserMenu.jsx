@@ -10,7 +10,7 @@ export function UserMenu() {
   const initials = user?.username?.slice(0, 2).toUpperCase() || "SC"
   return <div className="relative">
     <button onClick={() => setOpen((value) => !value)} className="flex items-center gap-2 rounded-full p-1 hover:bg-surface" aria-expanded={open} aria-haspopup="menu">
-      <span className="grid h-9 w-9 place-items-center rounded-full bg-accent text-xs font-bold">{initials}</span><ChevronDown size={15} className="hidden text-muted sm:block" />
+      <span className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-accent text-xs font-bold">{user?.avatar ? <img src={user.avatar} alt={`${user.username || "User"} profile`} className="h-full w-full object-cover" /> : initials}</span><ChevronDown size={15} className="hidden text-muted sm:block" />
     </button>
     {open && <div className="absolute right-0 top-12 z-30 w-60 rounded-lg border border-line bg-surface p-2 shadow-2xl" role="menu">
       <div className="border-b border-line px-3 pb-3"><p className="truncate text-sm font-semibold">{user?.fullName || user?.username || "StreamCore user"}</p><p className="truncate text-xs text-muted">@{user?.username || "creator"}</p></div>

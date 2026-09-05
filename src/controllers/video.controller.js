@@ -47,6 +47,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
                     [sortBy || "createdAt"]:
                     sortType === "asc" ? 1 : -1
                 }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "owner",
+                    pipeline: [
+                        { $project: { username: 1, fullname: 1, avatar: 1 } }
+                    ]
+                }
+            },
+            {
+                $unwind: "$owner"
             }
         ]
     )
@@ -114,8 +128,11 @@ const getVideoById = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid video Id");
     }
 
-    const video = await Video.findById(videoId)
-        .populate("owner", "username fullname avatar")
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        { $inc: { views: 1 } },
+        { new: true }
+    ).populate("owner", "username fullname avatar")
 
     if(!video) {
         throw new ApiError(404, "Video not found")

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="#080808"/><stop offset="100%" stop-color="#000000"/></radialGradient>
+    <linearGradient id="topRibbonGrad" x1="15%" y1="15%" x2="85%" y2="50%"><stop offset="0%" stop-color="#ff3333"/><stop offset="15%" stop-color="#ff1a1a"/><stop offset="55%" stop-color="#d60000"/><stop offset="85%" stop-color="#8a0000"/><stop offset="100%" stop-color="#550000"/></linearGradient>
+    <linearGradient id="topRimGrad" x1="10%" y1="10%" x2="70%" y2="40%"><stop offset="0%" stop-color="#ff9999" stop-opacity="0.8"/><stop offset="30%" stop-color="#ff2222" stop-opacity="0"/></linearGradient>
+    <linearGradient id="botRibbonGrad" x1="15%" y1="75%" x2="80%" y2="60%"><stop offset="0%" stop-color="#ff1a1a"/><stop offset="45%" stop-color="#e60000"/><stop offset="75%" stop-color="#990000"/><stop offset="100%" stop-color="#3d0000"/></linearGradient>
+    <linearGradient id="botInsideGrad" x1="40%" y1="65%" x2="75%" y2="75%"><stop offset="0%" stop-color="#730000"/><stop offset="50%" stop-color="#a80000"/><stop offset="100%" stop-color="#e60000"/></linearGradient>
+    <linearGradient id="innerBackGrad" x1="20%" y1="40%" x2="45%" y2="50%"><stop offset="0%" stop-color="#800000"/><stop offset="50%" stop-color="#3b0000"/><stop offset="100%" stop-color="#000000"/></linearGradient>
+    <filter id="creaseShadow" x="-20%" y="-20%" width="160%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="16"/><feOffset dx="8" dy="12" result="offsetblur"/><feFlood flood-color="#000000" flood-opacity="0.9"/><feComposite in2="offsetblur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
+  </defs>
+  <rect width="1000" height="1000" fill="url(#bgGlow)"/>
+  <g transform="translate(45, 10)">
+    <path d="M 370 295 C 280 295 210 350 210 420 L 210 530 C 210 545 220 555 235 550 L 420 670 L 420 340 Z" fill="url(#innerBackGrad)"/>
+    <path d="M 420 670 L 570 745 C 670 735 730 670 770 600 C 690 675 580 750 420 670 Z" fill="url(#botInsideGrad)"/>
+    <path d="M 212 550 L 212 700 C 212 795 320 835 405 832 C 520 828 650 755 776 612 C 790 596 790 575 770 600 C 640 730 490 775 390 750 C 290 725 245 660 245 570 Z" fill="url(#botRibbonGrad)"/>
+    <path d="M 212 400 C 212 210 375 110 515 190 C 645 265 745 350 820 440 C 835 458 830 480 805 498 C 780 515 758 510 740 488 C 665 395 565 305 465 240 C 380 185 245 220 245 365 C 245 425 295 490 375 550 L 212 400 Z" fill="url(#topRibbonGrad)" filter="url(#creaseShadow)"/>
+    <path d="M 230 350 C 230 190 400 125 515 190 C 640 260 740 345 810 435" fill="none" stroke="url(#topRimGrad)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M 370 300 L 370 660 L 680 480 Z" fill="#000000"/>
+    <polygon points="425,395 425,565 570,480" fill="#ffffff" stroke="#ffffff" stroke-width="28" stroke-linejoin="round" stroke-linecap="round"/>
+  </g>
+</svg>

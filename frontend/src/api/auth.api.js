@@ -5,7 +5,7 @@ export const authApi = {
     const data = unwrap(await http.post("/users/login", payload))
     return data.user ?? data
   },
-  register: async (payload) => unwrap(await http.post("/users/register", payload)),
+  register: async (formData) => unwrap(await http.post("/users/register", formData, { headers: { "Content-Type": "multipart/form-data" } })),
   logout: async () => unwrap(await http.post("/users/logout")),
   refreshToken: async () => unwrap(await http.post("/users/refresh-token")),
   currentUser: async () => unwrap(await http.get("/users/current-user")),

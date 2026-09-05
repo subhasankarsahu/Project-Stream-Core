@@ -7,7 +7,7 @@ export const useAuthStore = create((set) => ({
   status: "idle",
   error: null,
   bootstrap: async () => {
-    set({ status: "loading", error: null })
+    set({ status: "bootstrapping", error: null })
     try {
       const user = await authApi.currentUser()
       set({ user, status: "authenticated" })
@@ -16,7 +16,7 @@ export const useAuthStore = create((set) => ({
     }
   },
   login: async (credentials) => {
-    set({ status: "loading", error: null })
+    set({ status: "authenticating", error: null })
     try {
       const user = await authApi.login(credentials)
       set({ user, status: "authenticated" })
@@ -28,7 +28,7 @@ export const useAuthStore = create((set) => ({
     }
   },
   register: async (formData) => {
-    set({ status: "loading", error: null })
+    set({ status: "authenticating", error: null })
     try {
       const user = await authApi.register(formData)
       set({ user, status: "authenticated" })
