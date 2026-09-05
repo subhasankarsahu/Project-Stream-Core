@@ -1,3 +1,22 @@
-import { Link, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { useVideo } from "../hooks/useVideos"
-export function WatchPage() { const { videoId } = useParams(); const { data: video, isLoading } = useVideo(videoId); if (isLoading) return <div className="p-8 text-muted">Loading video...</div>; if (!video) return <div className="p-8 text-muted">Video not found.</div>; const owner = typeof video.owner === "object" ? video.owner : null; return <article className="mx-auto max-w-6xl p-5 md:p-8"><div className="aspect-video overflow-hidden rounded-xl bg-black"><video className="h-full w-full" controls poster={video.thumbnail} src={video.videoFile} /></div><h1 className="mt-5 text-xl font-bold md:text-2xl">{video.title}</h1><div className="mt-3 flex flex-wrap items-center justify-between gap-4 border-b border-line pb-5 text-sm text-muted"><span>{(video.views || 0).toLocaleString()} views</span><Link to={`/channel/${owner?.username || ""}`} className="text-white hover:text-accent">{owner?.username || "Creator"}</Link></div><p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-muted">{video.description}</p></article> }
+import { useAuthStore } from "../stores/authStore"
+import { useVideoInteraction } from "../hooks/useWatchData"
+import { VideoPlayer } from "../components/watch/VideoPlayer"
+import { VideoMeta } from "../components/watch/VideoMeta"
+import { CommentList } from "../components/watch/CommentList"
+import { RelatedVideos } from "../components/watch/RelatedVideos"
+
+export function WatchPage() {
+	const { videoId } = useParams()
+	const user = useAuthStore((state) => state.user)
+	const { data: video, isLoading, isError } = useVideo(videoId)
+	if (isLoading) return <div className="mx-auto max-w-6xl p-5 md:p-8"><div className="aspect-video animate-pulse rounded-xl bg-surface" /><div className="mt-5 h-7 w-2/3 animate-pulse rounded bg-surface" /></div>
+	if (isError || !video) return <div className="p-8 text-muted">Video not found or unavailable.</div>
+	return <article className="mx-auto max-w-[1400px] p-5 md:p-8"><div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]"><div className="min-w-0"><VideoPlayer video={video} /><WatchDetails video={video} userId={user?._id} /><CommentList videoId={videoId} /></div><RelatedVideos videoId={videoId} /></div></article>
+}
+
+function WatchDetails({ video, userId }) {
+	const { isLiked, isSubscribed, likeMutation, subscribeMutation } = useVideoInteraction(video, userId)
+	return <div className="mt-5"><VideoMeta video={video} isLiked={isLiked} isSubscribed={isSubscribed} isLikePending={likeMutation.isPending} isSubscribePending={subscribeMutation.isPending} onLike={() => likeMutation.mutate()} onSubscribe={() => subscribeMutation.mutate()} /></div>
+}
