@@ -1,25 +1,29 @@
+import { lazy, Suspense } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 import { ProtectedRoute } from "./routes/ProtectedRoute"
 import { GuestRoute } from "./routes/GuestRoute"
 import { AuthLayout, DashboardLayout, MainLayout } from "./components/layout"
-import { HomePage } from "./pages/HomePage"
-import { SearchResultsPage } from "./pages/SearchResultsPage"
-import { LoginPage } from "./pages/LoginPage"
-import { RegisterPage } from "./pages/RegisterPage"
-import { WatchPage } from "./pages/WatchPage"
-import { DashboardOverview } from "./pages/DashboardOverview"
-import { UploadVideoPage } from "./pages/UploadVideoPage"
-import { ChannelPage } from "./pages/ChannelPage"
-import { ProfilePage } from "./pages/ProfilePage"
-import { HistoryPage } from "./pages/HistoryPage"
-import { LikedVideosPage } from "./pages/LikedVideosPage"
-import { EditVideoPage } from "./pages/EditVideoPage"
-import { PlaylistsPage } from "./pages/PlaylistsPage"
-import { PlaylistDetailPage } from "./pages/PlaylistDetailPage"
-import { TweetFeedPage } from "./pages/TweetFeedPage"
+import { RouteFallback } from "./components/app/RouteFallback"
+
+const page = (loader, name) => lazy(() => loader().then((module) => ({ default: module[name] })))
+const HomePage = page(() => import("./pages/HomePage"), "HomePage")
+const SearchResultsPage = page(() => import("./pages/SearchResultsPage"), "SearchResultsPage")
+const LoginPage = page(() => import("./pages/LoginPage"), "LoginPage")
+const RegisterPage = page(() => import("./pages/RegisterPage"), "RegisterPage")
+const WatchPage = page(() => import("./pages/WatchPage"), "WatchPage")
+const DashboardOverview = page(() => import("./pages/DashboardOverview"), "DashboardOverview")
+const UploadVideoPage = page(() => import("./pages/UploadVideoPage"), "UploadVideoPage")
+const ChannelPage = page(() => import("./pages/ChannelPage"), "ChannelPage")
+const ProfilePage = page(() => import("./pages/ProfilePage"), "ProfilePage")
+const HistoryPage = page(() => import("./pages/HistoryPage"), "HistoryPage")
+const LikedVideosPage = page(() => import("./pages/LikedVideosPage"), "LikedVideosPage")
+const EditVideoPage = page(() => import("./pages/EditVideoPage"), "EditVideoPage")
+const PlaylistsPage = page(() => import("./pages/PlaylistsPage"), "PlaylistsPage")
+const PlaylistDetailPage = page(() => import("./pages/PlaylistDetailPage"), "PlaylistDetailPage")
+const TweetFeedPage = page(() => import("./pages/TweetFeedPage"), "TweetFeedPage")
 
 export function App() {
-  return <Routes>
+  return <Suspense fallback={<RouteFallback />}><Routes>
     <Route element={<ProtectedRoute />}>
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
@@ -46,5 +50,5 @@ export function App() {
       </Route>
     </Route>
     <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes>
+  </Routes></Suspense>
 }

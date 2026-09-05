@@ -1,0 +1,1 @@
+export function RouteFallback() { return <main className="grid min-h-[60vh] place-items-center bg-ink text-muted"><div className="flex items-center gap-3" role="status" aria-live="polite"><span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-white" /> Loading page...</div></main> }

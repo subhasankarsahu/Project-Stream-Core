@@ -10,9 +10,9 @@ export function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const logout = useAuthStore((state) => state.logout)
   return <div className="min-h-screen bg-ink text-white">
-    <TopNavbar onOpenMobileMenu={() => setMobileOpen(true)} />
+    <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-ink">Skip to content</a><TopNavbar onOpenMobileMenu={() => setMobileOpen(true)} />
     <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} onNavigate={() => {}} onSignOut={logout} />
     <MobileSidebarDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} />
-    <main className={`min-h-screen pt-28 transition-[padding] duration-200 md:pt-16 ${collapsed ? "lg:pl-20" : "lg:pl-60"}`}><Outlet /></main>
+    <main id="main-content" tabIndex="-1" className={`min-h-screen pt-28 transition-[padding] duration-200 md:pt-16 ${collapsed ? "lg:pl-20" : "lg:pl-60"}`}><Outlet /></main>
   </div>
 }
