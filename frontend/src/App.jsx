@@ -12,6 +12,7 @@ import { ChannelPage } from "./pages/ChannelPage"
 import { ProfilePage } from "./pages/ProfilePage"
 import { HistoryPage } from "./pages/HistoryPage"
 import { LikedVideosPage } from "./pages/LikedVideosPage"
+import { EditVideoPage } from "./pages/EditVideoPage"
 
 export function App() {
   return <Routes>
@@ -26,6 +27,7 @@ export function App() {
         <Route path="/liked" element={<LikedVideosPage />} />
         <Route path="/studio" element={<DashboardLayout />}>
           <Route index element={<StudioPage />} />
+          <Route path="videos/:videoId/edit" element={<EditVideoPage />} />
         </Route>
       </Route>
     </Route>

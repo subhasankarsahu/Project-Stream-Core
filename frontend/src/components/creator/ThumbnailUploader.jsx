@@ -1,0 +1,3 @@
+export function ThumbnailUploader({ register, error, preview }) {
+  return <label className="block space-y-2 text-sm font-medium"><span>Thumbnail</span>{preview && <img src={preview} alt="Thumbnail preview" className="aspect-video w-full rounded-lg border border-line bg-surface object-cover" />}<input type="file" accept="image/jpeg,image/png,image/webp" {...register("thumbnail")} className="block w-full text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-line file:px-3 file:py-2 file:text-white" />{error && <span className="block text-xs text-accent">{error.message}</span>}<span className="block text-xs font-normal text-muted">JPG, PNG, or WebP. Maximum 5 MB.</span></label>
+}
