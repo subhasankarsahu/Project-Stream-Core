@@ -6,6 +6,8 @@ import { VideoPlayer } from "../components/watch/VideoPlayer"
 import { VideoMeta } from "../components/watch/VideoMeta"
 import { CommentList } from "../components/watch/CommentList"
 import { RelatedVideos } from "../components/watch/RelatedVideos"
+import { AddToPlaylistModal } from "../components/social/AddToPlaylistModal"
+import { useState } from "react"
 
 export function WatchPage() {
 	const { videoId } = useParams()
@@ -17,6 +19,7 @@ export function WatchPage() {
 }
 
 function WatchDetails({ video, userId }) {
+	const [saveOpen, setSaveOpen] = useState(false)
 	const { isLiked, isSubscribed, likeMutation, subscribeMutation } = useVideoInteraction(video, userId)
-	return <div className="mt-5"><VideoMeta video={video} isLiked={isLiked} isSubscribed={isSubscribed} isLikePending={likeMutation.isPending} isSubscribePending={subscribeMutation.isPending} onLike={() => likeMutation.mutate()} onSubscribe={() => subscribeMutation.mutate()} /></div>
+	return <div className="mt-5"><VideoMeta video={video} isLiked={isLiked} isSubscribed={isSubscribed} isLikePending={likeMutation.isPending} isSubscribePending={subscribeMutation.isPending} onLike={() => likeMutation.mutate()} onSubscribe={() => subscribeMutation.mutate()} onSave={() => setSaveOpen(true)} />{saveOpen && <AddToPlaylistModal videoId={video._id} userId={userId} onClose={() => setSaveOpen(false)} />}</div>
 }

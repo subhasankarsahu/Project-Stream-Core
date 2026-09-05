@@ -13,6 +13,9 @@ import { ProfilePage } from "./pages/ProfilePage"
 import { HistoryPage } from "./pages/HistoryPage"
 import { LikedVideosPage } from "./pages/LikedVideosPage"
 import { EditVideoPage } from "./pages/EditVideoPage"
+import { PlaylistsPage } from "./pages/PlaylistsPage"
+import { PlaylistDetailPage } from "./pages/PlaylistDetailPage"
+import { TweetFeedPage } from "./pages/TweetFeedPage"
 
 export function App() {
   return <Routes>
@@ -25,6 +28,9 @@ export function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/liked" element={<LikedVideosPage />} />
+        <Route path="/playlists" element={<PlaylistsPage />} />
+        <Route path="/playlists/:playlistId" element={<PlaylistDetailPage />} />
+        <Route path="/tweets" element={<TweetFeedPage />} />
         <Route path="/studio" element={<DashboardLayout />}>
           <Route index element={<StudioPage />} />
           <Route path="videos/:videoId/edit" element={<EditVideoPage />} />

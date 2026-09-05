@@ -13,6 +13,11 @@ export function useCreateComment(videoId) {
   return useMutation({ mutationFn: (payload) => commentsApi.create(videoId, payload), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["comments", videoId] }) })
 }
 
+export function useCommentLike() {
+  const queryClient = useQueryClient()
+  return useMutation({ mutationFn: (commentId) => likesApi.toggleComment(commentId), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["comments"] }) })
+}
+
 export function useVideoInteraction(video, userId) {
   const queryClient = useQueryClient()
   const likedQuery = useQuery({ queryKey: ["liked-videos"], queryFn: likesApi.videos })

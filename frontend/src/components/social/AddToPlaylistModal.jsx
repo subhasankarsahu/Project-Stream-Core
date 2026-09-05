@@ -1,0 +1,6 @@
+import { useState } from "react"
+import { useUserPlaylists } from "../../hooks/useSocialData"
+import { playlistsApi } from "../../api/playlists.api"
+import { Modal } from "./Modal"
+
+export function AddToPlaylistModal({ videoId, userId, onClose, onSaved }) { const { data: playlists = [], isLoading } = useUserPlaylists(userId); const [error, setError] = useState(""); const add = async (playlistId) => { try { await playlistsApi.addVideo(videoId, playlistId); onSaved?.(); onClose() } catch { setError("Unable to add video to playlist.") } }; return <Modal title="Save to playlist" onClose={onClose}><div className="space-y-2">{isLoading && <p className="text-sm text-muted">Loading playlists...</p>}{playlists.map((playlist) => <button key={playlist._id} onClick={() => add(playlist._id)} className="flex w-full items-center justify-between rounded-lg border border-line p-3 text-left text-sm hover:bg-line"><span>{playlist.name}</span><span className="text-xs text-muted">{playlist.videos?.length || 0} videos</span></button>)}{!isLoading && !playlists.length && <p className="text-sm text-muted">Create a playlist first from your Playlists page.</p>}{error && <p className="text-sm text-accent">{error}</p>}</div></Modal> }
