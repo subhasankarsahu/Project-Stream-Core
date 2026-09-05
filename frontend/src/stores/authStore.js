@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { authApi } from "../api/auth.api"
+import { getAuthErrorMessage } from "../utils/authError"
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -21,7 +22,7 @@ export const useAuthStore = create((set) => ({
       set({ user, status: "authenticated" })
       return user
     } catch (error) {
-      const message = error.response?.data?.message || "Unable to sign in."
+        const message = getAuthErrorMessage(error, "Unable to sign in.")
       set({ status: "anonymous", error: message })
       throw error
     }
@@ -33,9 +34,15 @@ export const useAuthStore = create((set) => ({
       set({ user, status: "authenticated" })
       return user
     } catch (error) {
-      set({ status: "anonymous", error: error.response?.data?.message || "Unable to create account." })
+        set({ status: "anonymous", error: getAuthErrorMessage(error, "Unable to create account.") })
       throw error
     }
+  },
+  refresh: async () => {
+    await authApi.refreshToken()
+    const user = await authApi.currentUser()
+    set({ user, status: "authenticated", error: null })
+    return user
   },
   logout: async () => {
     try { await authApi.logout() } finally { set({ user: null, status: "anonymous", error: null }) }
