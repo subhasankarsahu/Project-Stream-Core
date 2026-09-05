@@ -7,7 +7,8 @@ import { SearchResultsPage } from "./pages/SearchResultsPage"
 import { LoginPage } from "./pages/LoginPage"
 import { RegisterPage } from "./pages/RegisterPage"
 import { WatchPage } from "./pages/WatchPage"
-import { StudioPage } from "./pages/StudioPage"
+import { DashboardOverview } from "./pages/DashboardOverview"
+import { UploadVideoPage } from "./pages/UploadVideoPage"
 import { ChannelPage } from "./pages/ChannelPage"
 import { ProfilePage } from "./pages/ProfilePage"
 import { HistoryPage } from "./pages/HistoryPage"
@@ -32,7 +33,8 @@ export function App() {
         <Route path="/playlists/:playlistId" element={<PlaylistDetailPage />} />
         <Route path="/tweets" element={<TweetFeedPage />} />
         <Route path="/studio" element={<DashboardLayout />}>
-          <Route index element={<StudioPage />} />
+          <Route index element={<DashboardOverview />} />
+          <Route path="upload" element={<UploadVideoPage />} />
           <Route path="videos/:videoId/edit" element={<EditVideoPage />} />
         </Route>
       </Route>

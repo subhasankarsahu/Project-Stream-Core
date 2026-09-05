@@ -1,0 +1,3 @@
+import { Link } from "react-router-dom"
+import { VideoUploadForm } from "../components/creator/VideoUploadForm"
+export function UploadVideoPage() { return <section className="mx-auto max-w-3xl"><Link to="/studio" className="text-sm text-muted hover:text-white">Back to Dashboard</Link><div className="mb-8 mt-6 border-b border-line pb-5"><p className="text-sm font-semibold uppercase tracking-widest text-accent">Creator studio</p><h1 className="mt-2 text-3xl font-bold">Upload video</h1><p className="mt-2 text-muted">Upload to Cloudinary and shape how your audience finds it.</p></div><div className="rounded-xl border border-line bg-surface p-5 md:p-7"><VideoUploadForm /></div></section> }

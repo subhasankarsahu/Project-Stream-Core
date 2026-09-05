@@ -1,0 +1,1 @@
+export function DashboardWidget({ title, action, children }) { return <section className="rounded-xl border border-line bg-surface p-5"><div className="mb-5 flex items-center justify-between gap-4"><h2 className="font-bold">{title}</h2>{action}</div>{children}</section> }
