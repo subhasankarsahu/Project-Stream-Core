@@ -1,143 +1,259 @@
-# 🎬 StreamCore — Scalable Video Platform Backend
+# StreamCore
 
-A production-style backend for a video sharing platform, built with Node.js and Express.
-This project demonstrates how to design and implement a real-world backend system with authentication, media handling, and scalable architecture.
+A backend service for a video-sharing platform built with Node.js, Express.js, MongoDB, and Cloudinary.
 
----
-
-## 🚀 Overview
-
-StreamCore is a RESTful API that powers a video platform similar to YouTube.
-It handles user management, video uploads, interactions (likes, comments), and subscriptions — all structured using industry-standard backend practices.
-
-This project focuses on **clean architecture, scalability, and real-world backend patterns**.
+StreamCore was developed as a hands-on learning project to explore how modern backend systems are designed and implemented. The project focuses on authentication, media management, user interactions, and scalable API architecture while following industry-standard development practices.
 
 ---
 
-## 🧠 Features
+## Overview
 
-* 🔐 Authentication & Authorization (JWT-based)
-* 👤 User registration & login
-* 🎥 Video upload and management
-* ❤️ Like / Unlike videos
-* 💬 Comment system (with replies)
-* 🔔 Channel subscriptions
-* 📦 RESTful API design
-* ⚙️ Centralized error handling
-* 🧩 Modular and scalable folder structure
+StreamCore provides the backend infrastructure required for a video-sharing platform. It exposes RESTful APIs for user management, video publishing, subscriptions, playlists, comments, likes, and creator analytics.
+
+The primary goal of this project was to gain practical experience building a production-style backend application while understanding how different components of a modern web platform interact.
 
 ---
 
-## 🏗️ Tech Stack
+## Key Features
 
-* **Backend:** Node.js, Express.js
-* **Database:** MongoDB (Mongoose)
-* **Authentication:** JWT (Access + Refresh Tokens)
-* **File Uploads:** Multer / Cloud storage
-* **Other Tools:** dotenv, bcrypt, cookie-parser
+### Authentication & Authorization
+
+* User registration and login
+* JWT-based authentication
+* Access token and refresh token workflow
+* Secure logout mechanism
+* Protected API routes
+* Password management
+
+### User Management
+
+* User profile management
+* Avatar upload support
+* Cover image upload support
+* Account updates
+* Watch history tracking
+
+### Video Management
+
+* Video publishing
+* Thumbnail uploads
+* Video updates
+* Video deletion
+* Publish and unpublish functionality
+* Video discovery and retrieval
+
+### Channel Features
+
+* Channel profiles
+* Subscriber management
+* Subscription tracking
+* Creator statistics
+
+### Comments & Interactions
+
+* Comment creation
+* Comment updates
+* Comment deletion
+* Video likes
+* Comment likes
+* Tweet likes
+
+### Playlists
+
+* Create playlists
+* Update playlists
+* Delete playlists
+* Add videos to playlists
+* Remove videos from playlists
+
+### Tweets
+
+* Create tweets
+* Update tweets
+* Delete tweets
+* Retrieve user tweets
+
+### Analytics
+
+* Channel statistics
+* Total views
+* Subscriber counts
+* Like counts
+* Uploaded video metrics
+
+### Media Handling
+
+* Cloudinary integration
+* File uploads using Multer
+* Avatar management
+* Cover image management
+* Video and thumbnail uploads
 
 ---
 
-## 📁 Project Structure
+## Technology Stack
 
-```
+### Backend
+
+* Node.js
+* Express.js
+
+### Database
+
+* MongoDB
+* Mongoose
+
+### Authentication
+
+* JSON Web Tokens (JWT)
+* HTTP-only Cookies
+
+### File Storage
+
+* Cloudinary
+* Multer
+
+### Utilities
+
+* dotenv
+* cookie-parser
+* cors
+* bcrypt
+
+---
+
+## Project Structure
+
+```text
 src/
 │
-├── controllers/     # Business logic
-├── models/          # Database schemas
-├── routes/          # API routes
-├── middlewares/     # Auth & error handling
-├── utils/           # Helper functions
-├── config/          # DB & app configuration
-└── app.js           # App entry point
+├── controllers/      # Application business logic
+├── models/           # Database schemas and models
+├── routes/           # API route definitions
+├── middlewares/      # Authentication and request middleware
+├── utils/            # Helper utilities and shared modules
+├── db/               # Database connection configuration
+│
+├── app.js            # Express application configuration
+└── index.js          # Application entry point
 ```
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
-### 1. Clone the repository
+### Clone the Repository
 
-```
+```bash
 git clone https://github.com/subhasankarsahu/Project-Stream-Core.git
 ```
 
-### 2. Install dependencies
+### Install Dependencies
 
-```
+```bash
 npm install
 ```
 
-### 3. Setup environment variables
+### Configure Environment Variables
 
-Create a `.env` file in the root:
+Create a `.env` file in the project root.
 
-```
+```env
 PORT=5000
-MONGODB_URI=your_mongodb_connection
-ACCESS_TOKEN_SECRET=your_secret
-REFRESH_TOKEN_SECRET=your_secret
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_key
-CLOUDINARY_API_SECRET=your_secret
+
+MONGODB_URI=
+
+CORS_ORIGIN=
+
+ACCESS_TOKEN_SECRET=
+ACCESS_TOKEN_EXPIRY=
+
+REFRESH_TOKEN_SECRET=
+REFRESH_TOKEN_EXPIRY=
+
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
 ```
 
-### 4. Run the server
+### Start Development Server
 
-```
+```bash
 npm run dev
 ```
 
 ---
 
-## 📡 API Highlights
+## API Modules
 
-| Method | Endpoint           | Description      |
-| ------ | ------------------ | ---------------- |
-| POST   | /api/v1/users      | Register user    |
-| POST   | /api/v1/auth/login | Login user       |
-| GET    | /api/v1/videos     | Fetch all videos |
-| POST   | /api/v1/videos     | Upload video     |
-| POST   | /api/v1/likes      | Like a video     |
-| POST   | /api/v1/comments   | Add a comment    |
+The application is organized into the following API modules:
 
----
+* Users
+* Videos
+* Comments
+* Likes
+* Subscriptions
+* Playlists
+* Tweets
+* Dashboard
+* Healthcheck
 
-## 🎯 Learning Goals
+Base URL:
 
-This project was built to:
-
-* Understand backend architecture in depth
-* Learn how real-world APIs are structured
-* Practice authentication & authorization
-* Work with file uploads and media handling
-* Build scalable and maintainable systems
+```text
+/api/v1
+```
 
 ---
 
-## 🧪 Future Improvements
+## Development Goals
 
-* 📈 Pagination & performance optimization
-* 🔍 Search & filtering
-* 📊 Analytics (views, watch time)
-* 🧵 Real-time notifications
-* 🐳 Docker support
+This project was built to strengthen understanding of:
 
----
+* REST API design
+* Authentication and authorization workflows
+* JWT token management
+* Database modeling with MongoDB
+* Mongoose aggregation pipelines
+* Middleware architecture
+* File upload handling
+* Cloudinary integration
+* Backend project organization
+* Scalable application structure
 
-## 🤝 Contributing
-
-Contributions are welcome.
-Feel free to fork the repo and submit a pull request.
-
----
-
-## 📌 Acknowledgment
-
-Inspired by a backend development learning series and extended into a structured, production-style project.
+Rather than being developed as a commercial product, StreamCore was created as a practical learning exercise focused on applying backend engineering concepts in a realistic project environment.
 
 ---
 
-## 📜 License
+## Future Enhancements
 
-This project is open-source and available under the MIT License.
+Potential areas for future development include:
+
+* Redis caching
+* WebSocket-based real-time features
+* Background job processing
+* Automated testing
+* Docker support
+* API documentation using Swagger/OpenAPI
+* PostgreSQL implementation
+* CI/CD pipelines
+* Search and recommendation systems
+* Performance optimization and monitoring
+
+---
+
+## Contributing
+
+Contributions, suggestions, and feedback are welcome. Feel free to open an issue or submit a pull request.
+
+---
+
+## Acknowledgments
+
+This project was inspired by backend development learning resources and expanded through independent implementation and feature development to reinforce practical software engineering concepts.
+
+---
+
+## License
+
+This project is released under the MIT License.
