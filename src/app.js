@@ -2,8 +2,14 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import { ApiError } from "./utils/ApiError.js"
+import { securityHeaders } from "./middlewares/security.middleware.js"
+import { apiRateLimiter } from "./middlewares/rateLimiter.middleware.js"
+import { requestLogger } from "./middlewares/logger.middleware.js"
 
 const app = express()
+
+app.use(securityHeaders)
+app.use(requestLogger)
 
 const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
     .split(",")
@@ -38,6 +44,7 @@ import playlistRouter from "./routes/playlist.routes.js"
 import dashboardRouter from "./routes/dashboard.routes.js"
 
 //routes declaration
+app.use("/api/v1", apiRateLimiter)
 app.use("/api/v1/healthcheck", healthcheckRouter)
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/tweets", tweetRouter)
