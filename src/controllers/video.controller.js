@@ -4,7 +4,7 @@ import {User} from "../models/user.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
-import {uploadOnCloudinary} from "../utils/cloudinary.js"
+import {uploadOnCloudinary, deleteFromCloudinary} from "../utils/cloudinary.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -247,7 +247,12 @@ const updateVideo = asyncHandler(async (req, res) => {
             thumbnailLocalPath
         );
 
-        thumbnailUrl = thumbnail.url;
+        if (thumbnail?.url) {
+            if (video.thumbnail) {
+                await deleteFromCloudinary(video.thumbnail, "image").catch(() => {});
+            }
+            thumbnailUrl = thumbnail.url;
+        }
     }
 
     const updatedVideo = await Video.findByIdAndUpdate(
@@ -288,6 +293,13 @@ const deleteVideo = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Unauthorized")
     }
 
+    if (video.videoFile) {
+        await deleteFromCloudinary(video.videoFile, "video").catch(() => {});
+    }
+    if (video.thumbnail) {
+        await deleteFromCloudinary(video.thumbnail, "image").catch(() => {});
+    }
+
     await Video.findByIdAndDelete(videoId);
 
     return res
@@ -295,7 +307,6 @@ const deleteVideo = asyncHandler(async (req, res) => {
         .json(
             new ApiResponse(200, "Video deleted successfully", {})
         );
-    //TODO: delete video
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
