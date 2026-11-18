@@ -9,6 +9,29 @@ export const useChannelVideos = (userId) => useQuery({ queryKey: ["channel-video
 export const useWatchHistory = () => useQuery({ queryKey: ["watch-history"], queryFn: usersApi.history })
 export const useLikedVideos = () => useQuery({ queryKey: ["liked-videos"], queryFn: likesApi.videos })
 
+export function useClearWatchHistory() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => usersApi.clearHistory(),
+    onSuccess: () => {
+      queryClient.setQueryData(["watch-history"], [])
+    }
+  })
+}
+
+export function useRemoveWatchHistoryItem() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (videoId) => usersApi.removeFromHistory(videoId),
+    onSuccess: (_, videoId) => {
+      queryClient.setQueryData(["watch-history"], (old) => {
+        if (!Array.isArray(old)) return []
+        return old.filter((item) => (item._id || item) !== videoId)
+      })
+    }
+  })
+}
+
 export function useChannelSubscription(username, channelId) {
   const queryClient = useQueryClient()
   const mutation = useMutation({ mutationFn: () => subscriptionsApi.toggle(channelId), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["channel", username] }); queryClient.invalidateQueries({ queryKey: ["subscriptions"] }) } })

@@ -1,6 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { User } from '../models/user.model.js';
+import { Video } from '../models/video.model.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import jwt from 'jsonwebtoken';
@@ -463,6 +464,67 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     );
 });
 
+const addToWatchHistory = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  if (!mongoose.isValidObjectId(videoId)) {
+    throw new ApiError(400, 'Invalid video id');
+  }
+
+  const video = await Video.findById(videoId);
+  if (!video) {
+    throw new ApiError(404, 'Video not found');
+  }
+
+  await User.findByIdAndUpdate(req.user._id, {
+    $pull: { watchHistory: video._id }
+  });
+
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $push: {
+        watchHistory: {
+          $each: [video._id],
+          $position: 0,
+          $slice: 100
+        }
+      }
+    },
+    { new: true }
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, 'Video added to watch history', { videoId: video._id }));
+});
+
+const removeWatchHistoryItem = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  if (!mongoose.isValidObjectId(videoId)) {
+    throw new ApiError(400, 'Invalid video id');
+  }
+
+  await User.findByIdAndUpdate(req.user._id, {
+    $pull: { watchHistory: new mongoose.Types.ObjectId(videoId) }
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, 'Video removed from watch history', { videoId }));
+});
+
+const clearWatchHistory = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(req.user._id, {
+    $set: { watchHistory: [] }
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, 'Watch history cleared successfully', {}));
+});
+
 export {
   registerUser,
   loginUser,
@@ -474,5 +536,8 @@ export {
   updateUserAvatar,
   updateUserCoverImage,
   getUserChannelProfile,
-  getWatchHistory
+  getWatchHistory,
+  addToWatchHistory,
+  removeWatchHistoryItem,
+  clearWatchHistory
 };
