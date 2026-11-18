@@ -65,7 +65,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
         .populate("videos")
         .populate(
             "owner",
-            "username fullName avatar"
+            "username fullname avatar"
         );
 
     if(!playlist) {

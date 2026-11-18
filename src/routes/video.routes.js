@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
     deleteVideo,
     getAllVideos,
+    getTrendingVideos,
     getVideoById,
     publishAVideo,
     togglePublishStatus,
@@ -30,6 +31,8 @@ router
         ]),
         publishAVideo
     );
+
+router.route("/trending").get(getTrendingVideos);
 
 router
     .route("/:videoId")

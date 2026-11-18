@@ -8,67 +8,82 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+    const { page = 1, limit = 10, query, sortBy, sortType, userId, duration } = req.query;
+
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const parsedLimit = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
 
     const matchStage = {
         isPublished: true
-    }
+    };
 
-    if(query){
+    if (query?.trim()) {
         matchStage.$or = [
             {
                 title: {
-                    $regex: query,
+                    $regex: query.trim(),
                     $options: "i"
                 }
             },
             {
                 description: {
-                    $regex: query,
+                    $regex: query.trim(),
                     $options: "i"
                 }
             }
-        ]
+        ];
     }
 
-    if(userId) {
+    if (duration) {
+        const lowerDuration = duration.toLowerCase();
+        if (lowerDuration === "short") {
+            matchStage.duration = { $lt: 240 };
+        } else if (lowerDuration === "medium") {
+            matchStage.duration = { $gte: 240, $lte: 1200 };
+        } else if (lowerDuration === "long") {
+            matchStage.duration = { $gt: 1200 };
+        }
+    }
+
+    if (userId) {
         if (!isValidObjectId(userId)) {
             throw new ApiError(400, "Invalid user id");
         }
-        matchStage.owner = new mongoose.Types.ObjectId(userId)
+        matchStage.owner = new mongoose.Types.ObjectId(userId);
     }
 
-    const aggregate = Video.aggregate(
-        [
-            {
-                $match: matchStage
-            },
-            {
-                $sort: {
-                    [sortBy || "createdAt"]:
-                    sortType === "asc" ? 1 : -1
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "owner",
-                    foreignField: "_id",
-                    as: "owner",
-                    pipeline: [
-                        { $project: { username: 1, fullname: 1, avatar: 1 } }
-                    ]
-                }
-            },
-            {
-                $unwind: "$owner"
+    const allowedSortFields = ["createdAt", "views", "duration", "title"];
+    const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+    const sortOrder = sortType === "asc" ? 1 : -1;
+
+    const aggregate = Video.aggregate([
+        {
+            $match: matchStage
+        },
+        {
+            $sort: {
+                [sortField]: sortOrder
             }
-        ]
-    )
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    { $project: { username: 1, fullname: 1, avatar: 1 } }
+                ]
+            }
+        },
+        {
+            $unwind: "$owner"
+        }
+    ]);
 
     const options = {
-        page: Number(page),
-        limit: Number(limit)
+        page: parsedPage,
+        limit: parsedLimit
     };
 
     const videos = await Video.aggregatePaginate(
@@ -79,7 +94,53 @@ const getAllVideos = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(200, "Videos fetched successfully", videos)
     );
-})
+});
+
+const getTrendingVideos = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const parsedLimit = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+
+    const aggregate = Video.aggregate([
+        {
+            $match: {
+                isPublished: true
+            }
+        },
+        {
+            $sort: {
+                views: -1,
+                createdAt: -1
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    { $project: { username: 1, fullname: 1, avatar: 1 } }
+                ]
+            }
+        },
+        {
+            $unwind: "$owner"
+        }
+    ]);
+
+    const options = {
+        page: parsedPage,
+        limit: parsedLimit
+    };
+
+    const trendingVideos = await Video.aggregatePaginate(aggregate, options);
+
+    return res.status(200).json(
+        new ApiResponse(200, "Trending videos fetched successfully", trendingVideos)
+    );
+});
 
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description} = req.body;
@@ -265,6 +326,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 
 export {
     getAllVideos,
+    getTrendingVideos,
     publishAVideo,
     getVideoById,
     updateVideo,
