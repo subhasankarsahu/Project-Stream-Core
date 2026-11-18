@@ -38,9 +38,10 @@ The application follows a modular architecture with a clear separation of concer
 ### User Management
 
 * Profile management
-* Avatar uploads
-* Cover image uploads
-* Watch history tracking
+* Avatar uploads and replacements
+* Cover image uploads and replacements
+* Chronological watch history tracking and auto-recording
+* Watch history deletion and single-item removal
 * Channel profile pages
 
 ### Video Platform
@@ -49,8 +50,10 @@ The application follows a modular architecture with a clear separation of concer
 * Thumbnail management
 * Video updates and deletion
 * Publish/unpublish functionality
-* Video browsing and discovery
+* Video browsing and discovery with duration filtering (`short`, `medium`, `long`)
+* Trending videos discovery endpoint ranked by engagement
 * Channel-specific content
+* Bounded pagination and sanitized query sorting
 
 ### Community Features
 
@@ -76,12 +79,23 @@ The application follows a modular architecture with a clear separation of concer
 * Video analytics
 * Creator activity overview
 
-### Media Handling
+### Media Handling & Lifecycle
 
-* Cloudinary integration
+* Cloudinary integration with automated asset cleanup
+* Old media purging on avatar, cover image, and thumbnail updates
+* Cloudinary asset deletion when video records are deleted
 * Multer-based file uploads
 * Image processing workflow
 * Video asset management
+
+### Security & Operational Resilience
+
+* Security headers (Content-Security-Policy, nosniff, SAMEORIGIN, XSS protection)
+* Sliding-window rate limiting on API and authentication routes
+* HTTP request duration and access logging
+* Comprehensive health monitoring with MongoDB ping latency and memory stats
+* Container readiness probe endpoint (`/api/v1/healthcheck/ready`)
+* Graceful server shutdown on `SIGINT`/`SIGTERM` with clean DB disconnection
 
 ---
 
@@ -225,6 +239,12 @@ Start the development server:
 
 ```bash
 npm run dev
+```
+
+Run the automated test suite:
+
+```bash
+npm test
 ```
 
 ---
