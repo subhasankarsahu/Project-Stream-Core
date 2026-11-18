@@ -1,4 +1,5 @@
 import "dotenv/config";
+import mongoose from "mongoose";
 import { app } from "./app.js";
 import connectDB from "./db/index.js";
 
@@ -20,38 +21,47 @@ if (missingEnvironmentVariables.length > 0) {
     );
 }
 
+const port = process.env.PORT || 8000;
+
 connectDB()
-.then(
-    () => {
-        app.listen(process.env.PORT, () => {
-            console.log(`Server is running on port ${process.env.PORT}`);
+    .then(() => {
+        const server = app.listen(port, () => {
+            console.log(`Server is running on port ${port}`);
         });
-    }
-)
-.catch((err) => {
-    console.log("MONGO db connection failed !!!", err);
-    
-})
 
-/*
-import express from "express";
-const app = express();
+        const gracefulShutdown = async (signal) => {
+            console.log(`\nReceived ${signal}. Gracefully shutting down...`);
+            server.close(async () => {
+                console.log("HTTP server closed.");
+                try {
+                    await mongoose.connection.close(false);
+                    console.log("MongoDB connection closed.");
+                    process.exit(0);
+                } catch (error) {
+                    console.error("Error during MongoDB disconnection:", error);
+                    process.exit(1);
+                }
+            });
 
-( async () => {
-    try {
-        mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`);
-        console.log("Connected to MongoDB");
-        app.on("error", (error) => {
-            console.error("ERROR: ",error);
-            throw error;
+            setTimeout(() => {
+                console.error("Forceful shutdown after timeout.");
+                process.exit(1);
+            }, 10000).unref();
+        };
+
+        process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+        process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+        process.on("unhandledRejection", (reason, promise) => {
+            console.error("Unhandled Rejection at:", promise, "reason:", reason);
         });
-        app.listen(process.env.PORT, () => {
-            console.log(`Server is running on port ${process.env.PORT}`);
-        });
-    } catch (error) {
-        console.error("ERROR: ",error);
-        throw error;
-    }
-})()
 
-*/
+        process.on("uncaughtException", (error) => {
+            console.error("Uncaught Exception thrown:", error);
+            process.exit(1);
+        });
+    })
+    .catch((err) => {
+        console.error("MongoDB connection failed:", err);
+        process.exit(1);
+    });
