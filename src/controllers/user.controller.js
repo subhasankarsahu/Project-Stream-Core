@@ -360,6 +360,8 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'username is missing!');
   }
 
+  const viewerId = req.user?._id ? new mongoose.Types.ObjectId(req.user._id) : null;
+
   const channel = await User.aggregate([
     {
       $match: {
@@ -392,7 +394,12 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         isSubscribed: {
           $cond: {
-            if: { $in: [req.user?._id, '$subscribers.subscriber'] },
+            if: {
+              $and: [
+                { $ne: [viewerId, null] },
+                { $in: [viewerId, '$subscribers.subscriber'] },
+              ],
+            },
             then: true,
             else: false,
           },

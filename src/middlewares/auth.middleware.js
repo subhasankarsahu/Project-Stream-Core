@@ -28,3 +28,26 @@ export const verifyJWT = asyncHandler(async(req, _, next) => {
         throw new ApiError(401, error?.message || "Invalid Access Token")
     }
 })
+
+export const optionalAuth = asyncHandler(async (req, _, next) => {
+    try {
+        const authorization = req.header("Authorization");
+        const token = req.cookies?.accessToken ||
+            (authorization?.startsWith("Bearer ") ? authorization.slice(7) : null);
+
+        if (!token) {
+            req.user = null;
+            return next();
+        }
+
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
+
+        req.user = user || null;
+        next();
+    } catch {
+        // Fall back to unauthenticated guest mode if token is invalid or expired
+        req.user = null;
+        next();
+    }
+});
