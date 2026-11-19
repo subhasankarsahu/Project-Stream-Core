@@ -20,14 +20,36 @@ export function useCommentLike() {
 
 export function useVideoInteraction(video, userId) {
   const queryClient = useQueryClient()
-  const likedQuery = useQuery({ queryKey: ["liked-videos"], queryFn: likesApi.videos })
+  const likedQuery = useQuery({ queryKey: ["liked-videos"], queryFn: likesApi.videos, enabled: Boolean(userId) })
   const subscriptionsQuery = useQuery({ queryKey: ["subscriptions", userId], queryFn: () => subscriptionsApi.userSubscriptions(userId), enabled: Boolean(userId && video?.owner?._id) })
-  const likeMutation = useMutation({ mutationFn: () => likesApi.toggleVideo(video._id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["liked-videos"] }) })
-  const subscribeMutation = useMutation({ mutationFn: () => subscriptionsApi.toggle(video.owner._id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["subscriptions", userId] }) })
+
+  const likeMutation = useMutation({
+    mutationFn: () => likesApi.toggleVideo(video._id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["liked-videos"] })
+      queryClient.invalidateQueries({ queryKey: ["video", video?._id] })
+    }
+  })
+
+  const subscribeMutation = useMutation({
+    mutationFn: () => subscriptionsApi.toggle(video.owner._id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subscriptions", userId] })
+      queryClient.invalidateQueries({ queryKey: ["video", video?._id] })
+    }
+  })
+
   const likedVideos = likedQuery.data || []
   const subscribedChannels = subscriptionsQuery.data || []
-  const isLiked = likedVideos.some((item) => String(item.video?._id || item.video) === String(video?._id))
-  const isSubscribed = subscribedChannels.some((item) => String(item.channel?._id || item.channel) === String(video?.owner?._id))
+
+  const isLiked = userId
+    ? (likedVideos.some((item) => String(item.video?._id || item.video) === String(video?._id)) || Boolean(video?.isLiked))
+    : false
+
+  const isSubscribed = userId
+    ? (subscribedChannels.some((item) => String(item.channel?._id || item.channel) === String(video?.owner?._id)) || Boolean(video?.owner?.isSubscribed))
+    : false
+
   return { isLiked, isSubscribed, likeMutation, subscribeMutation }
 }
 
