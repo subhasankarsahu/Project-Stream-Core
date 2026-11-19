@@ -2,13 +2,21 @@
 
 Base URL: `/api/v1`
 
-Successful responses use `{ statusCode, success, message, data }`. Errors use `{ success, message, errors }`. Protected endpoints accept the `accessToken` HttpOnly cookie or `Authorization: Bearer <token>`.
+Successful responses use `{ statusCode, success, message, data }`. Errors use `{ success, message, errors }`.
+- **Public & Guest Access:** Read endpoints for videos, trending, comments, channel profiles, and playlists are accessible publicly without authentication. If an `accessToken` is provided, responses are personalized with user-specific interaction states (`isLiked`, `isSubscribed`, and watch history tracking).
+- **Protected Actions:** Write, update, and delete actions require the `accessToken` HttpOnly cookie or `Authorization: Bearer <token>`.
 
 ## Security & Resilience
 
 - **Rate Limiting:** Sliding-window rate limiters with `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` and `Retry-After` (HTTP 429).
   - General API endpoints: 300 requests per 15 minutes.
   - Authentication endpoints (`/users/login`, `/users/register`): 20 requests per 15 minutes.
+- **Request Validation & Sanitization:**
+  - `username`: 3-30 characters, lowercase alphanumeric and underscores only (`/^[a-z0-9_]{3,30}$/`).
+  - `email`: RFC-compliant email address format.
+  - `password`: Minimum 6 characters.
+  - Content length bounding: Tweets (1-280 chars), Comments (1-1000 chars), Playlists (name: 1-100 chars, desc: 1-1000 chars).
+  - Route ObjectId validation: Strictly validates 24-character hexadecimal MongoDB ObjectIds before database execution.
 - **Security Headers:** Protects against MIME sniffing (`nosniff`), clickjacking (`SAMEORIGIN`), XSS (`1; mode=block`), and referrer leaks.
 - **Graceful Shutdown:** Intercepts `SIGINT`/`SIGTERM` to complete in-flight HTTP requests and cleanly terminate database connections.
 
@@ -27,8 +35,8 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/users/register` | POST | No | Multipart fields `avatar`, optional `coverImage` | Multipart `fullName`, `email`, `username`, `password` | `201`, created user without password/token | Registers a user and uploads profile images. Rate-limited. |
-| `/users/login` | POST | No | None | JSON `email` or `username`, `password` | `200`, user; sets access and refresh cookies | Authenticates a user. Rate-limited. |
+| `/users/register` | POST | No | Multipart fields `avatar`, optional `coverImage` | Multipart `fullName`, `email`, `username`, `password` | `201`, created user without password/token | Registers a user and uploads profile images. Validated & rate-limited. |
+| `/users/login` | POST | No | None | JSON `email` or `username`, `password` | `200`, user; sets access and refresh cookies | Authenticates a user. Validated & rate-limited. |
 | `/users/logout` | POST | Yes | None | None | `200`, empty data; clears cookies | Revokes the stored refresh token. |
 | `/users/refresh-token` | POST | No | None | Optional JSON `refreshToken` when not using the cookie | `200`, refreshed token metadata; rotates cookies | Issues a new access/refresh token pair. |
 | `/users/change-password` | POST | Yes | None | JSON `oldPassword`, `newPassword` | `200`, empty data | Changes the authenticated user password. |
@@ -36,7 +44,7 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 | `/users/update-account` | PATCH | Yes | None | JSON `fullName`, `email` | `200`, updated user | Updates account details. |
 | `/users/avatar` | PATCH | Yes | Multipart field `avatar` | Image upload | `200`, updated user | Replaces avatar and removes old asset from Cloudinary. |
 | `/users/cover-image` | PATCH | Yes | Multipart field `coverImage` | Image upload | `200`, updated user | Replaces cover image and removes old asset from Cloudinary. |
-| `/users/c/:username` | GET | Yes | Path `username` | None | `200`, channel profile and subscription counts | Gets a channel profile. |
+| `/users/c/:username` | GET | Optional | Path `username` | None | `200`, channel profile and subscription counts | Gets a channel profile. Returns `isSubscribed` if authenticated. |
 | `/users/history` | GET | Yes | None | None | `200`, watched videos array | Gets the user's chronological watch history. |
 | `/users/history` | DELETE | Yes | None | None | `200`, empty data | Clears the authenticated user's entire watch history. |
 | `/users/history/:videoId` | POST | Yes | Path `videoId` | None | `200`, `{ videoId }` | Records a video into the user's watch history. |
@@ -48,10 +56,10 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/videos/` | GET | Yes | Query `page`, `limit` (max 50), `query`, `sortBy`, `sortType`, `userId`, `duration` (`short` \| `medium` \| `long`) | None | `200`, aggregate pagination result | Lists published videos with bounded pagination and duration filters. |
-| `/videos/trending` | GET | Yes | Query `page`, `limit` | None | `200`, aggregate pagination result | Lists trending videos ranked by views and recency. |
+| `/videos/` | GET | Optional | Query `page`, `limit` (max 50), `query`, `sortBy`, `sortType`, `userId`, `duration` (`short` \| `medium` \| `long`) | None | `200`, aggregate pagination result | Lists published videos with bounded pagination and duration filters. |
+| `/videos/trending` | GET | Optional | Query `page`, `limit` | None | `200`, aggregate pagination result | Lists trending videos ranked by views and recency. |
 | `/videos/` | POST | Yes | Multipart fields `videoFile`, `thumbnail` | Multipart `title`, `description`, video and thumbnail files | `201`, created video | Publishes a video. |
-| `/videos/:videoId` | GET | Yes | Path `videoId` | None | `200`, video with owner | Gets video details, increments view count, and auto-records watch history. |
+| `/videos/:videoId` | GET | Optional | Path `videoId` | None | `200`, enriched video object with `likesCount`, `commentsCount`, `isLiked`, `owner.subscribersCount`, and `owner.isSubscribed` | Gets enriched video details, increments view count, and auto-records watch history if authenticated. |
 | `/videos/:videoId` | PATCH | Yes | Path `videoId`, multipart `thumbnail` optional | Optional JSON `title`, `description` and thumbnail | `200`, updated video | Updates an owned video and purges superseded thumbnails from Cloudinary. |
 | `/videos/:videoId` | DELETE | Yes | Path `videoId` | None | `200`, empty data | Deletes an owned video and purges media files from Cloudinary. |
 | `/videos/toggle/publish/:videoId` | PATCH | Yes | Path `videoId` | None | `200`, updated video | Toggles publication status for an owned video. |
@@ -62,9 +70,9 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/comments/:videoId` | GET | Yes | Path `videoId`; query `page`, `limit` | None | `200`, comments | Lists comments for a video. |
-| `/comments/:videoId` | POST | Yes | Path `videoId` | JSON `content` | `201`, created comment | Adds a comment to a video. |
-| `/comments/c/:commentId` | PATCH | Yes | Path `commentId` | JSON `content` | `200`, updated comment | Updates an owned comment. |
+| `/comments/:videoId` | GET | Optional | Path `videoId`; query `page`, `limit` | None | `200`, comments array | Lists comments for a video publicly. |
+| `/comments/:videoId` | POST | Yes | Path `videoId` | JSON `content` (1-1000 chars) | `201`, created comment | Adds a comment to a video. |
+| `/comments/c/:commentId` | PATCH | Yes | Path `commentId` | JSON `content` (1-1000 chars) | `200`, updated comment | Updates an owned comment. |
 | `/comments/c/:commentId` | DELETE | Yes | Path `commentId` | None | `200`, empty data | Deletes an owned comment. |
 
 ---
@@ -73,7 +81,7 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/likes/videos` | GET | Yes | None | None | `200`, liked videos | Lists videos liked by the user. |
+| `/likes/videos` | GET | Yes | None | None | `200`, liked videos array with populated owner | Lists videos liked by the user with creator profiles. |
 | `/likes/video/:videoId` | POST | Yes | Path `videoId` | None | `200`, like or empty data | Toggles a video like. |
 | `/likes/comment/:commentId` | POST | Yes | Path `commentId` | None | `200`, like or empty data | Toggles a comment like. |
 | `/likes/tweet/:tweetId` | POST | Yes | Path `tweetId` | None | `200`, like or empty data | Toggles a tweet like. |
@@ -84,9 +92,10 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/subscriptions/c/:channelId` | GET | Yes | Path `channelId` | None | `200`, subscriber list | Lists subscribers of a channel. |
-| `/subscriptions/c/:channelId` | POST | Yes | Path `channelId` | None | `200`, subscription or empty data | Toggles the current user's subscription to a channel. |
-| `/subscriptions/u/:subscriberId` | GET | Yes | Path `subscriberId` | None | `200`, subscribed channels | Lists channels followed by a user. |
+| `/subscriptions/c/:channelId` | GET | Optional | Path `channelId` | None | `200`, subscriber list with safe projections | Lists subscribers of a channel. |
+| `/subscriptions/c/:channelId/status` | GET | Optional | Path `channelId` | None | `200`, `{ isSubscribed, subscribersCount }` | Checks subscription state for caller and retrieves subscriber total. |
+| `/subscriptions/c/:channelId` | POST | Yes | Path `channelId` | None | `200`, `{ isSubscribed, subscription? }` | Toggles subscription to a channel. |
+| `/subscriptions/u/:subscriberId` | GET | Optional | Path `subscriberId` | None | `200`, subscribed channels list | Lists channels followed by a user. |
 
 ---
 
@@ -94,9 +103,9 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/tweets/` | POST | Yes | None | JSON `content` | `201`, created tweet | Creates a tweet. |
-| `/tweets/user/:userId` | GET | Yes | Path `userId` | None | `200`, tweets | Lists tweets owned by a user. |
-| `/tweets/:tweetId` | PATCH | Yes | Path `tweetId` | JSON `content` | `200`, updated tweet | Updates an owned tweet. |
+| `/tweets/` | POST | Yes | None | JSON `content` (1-280 chars) | `201`, created tweet | Creates a tweet. |
+| `/tweets/user/:userId` | GET | Optional | Path `userId` | None | `200`, tweets | Lists tweets owned by a user publicly. |
+| `/tweets/:tweetId` | PATCH | Yes | Path `tweetId` | JSON `content` (1-280 chars) | `200`, updated tweet | Updates an owned tweet. |
 | `/tweets/:tweetId` | DELETE | Yes | Path `tweetId` | None | `200`, empty data | Deletes an owned tweet. |
 
 ---
@@ -105,13 +114,13 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/playlist/` | POST | Yes | None | JSON `name`, `description` | `201`, created playlist | Creates a playlist. |
-| `/playlist/:playlistId` | GET | Yes | Path `playlistId` | None | `200`, playlist with videos and owner | Gets a playlist. |
+| `/playlist/` | POST | Yes | None | JSON `name` (1-100 chars), `description` (1-1000 chars) | `201`, created playlist | Creates a playlist. |
+| `/playlist/:playlistId` | GET | Optional | Path `playlistId` | None | `200`, playlist with videos and owner | Gets a playlist publicly. |
 | `/playlist/:playlistId` | PATCH | Yes | Path `playlistId` | Optional JSON `name`, `description` | `200`, updated playlist | Updates an owned playlist. |
 | `/playlist/:playlistId` | DELETE | Yes | Path `playlistId` | None | `200`, empty data | Deletes an owned playlist. |
 | `/playlist/add/:videoId/:playlistId` | PATCH | Yes | Path `videoId`, `playlistId` | None | `200`, updated playlist | Adds an existing video to an owned playlist. |
 | `/playlist/remove/:videoId/:playlistId` | PATCH | Yes | Path `videoId`, `playlistId` | None | `200`, updated playlist | Removes a video from an owned playlist. |
-| `/playlist/user/:userId` | GET | Yes | Path `userId` | None | `200`, playlists | Lists a user's playlists. |
+| `/playlist/user/:userId` | GET | Optional | Path `userId` | None | `200`, playlists | Lists a user's playlists publicly. |
 
 ---
 

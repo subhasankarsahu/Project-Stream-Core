@@ -50,18 +50,20 @@ The application follows a modular architecture with a clear separation of concer
 * Thumbnail management
 * Video updates and deletion
 * Publish/unpublish functionality
-* Video browsing and discovery with duration filtering (`short`, `medium`, `long`)
+* Public guest browsing with optional authentication
+* Enriched video responses (`likesCount`, `commentsCount`, `isLiked`, subscriber stats)
+* Video discovery with duration filtering (`short`, `medium`, `long`)
 * Trending videos discovery endpoint ranked by engagement
 * Channel-specific content
 * Bounded pagination and sanitized query sorting
 
 ### Community Features
 
-* Video likes
+* Video likes with creator profile population
 * Comment likes
 * Tweet likes
-* Video comments
-* Creator subscriptions
+* Video comments with guest prompt
+* Creator subscriptions and status tracking
 * User engagement tracking
 
 ### Playlists
@@ -71,6 +73,7 @@ The application follows a modular architecture with a clear separation of concer
 * Delete playlists
 * Add videos to playlists
 * Remove videos from playlists
+* Public playlist sharing and channel playlist browsing
 
 ### Dashboard
 
@@ -88,14 +91,17 @@ The application follows a modular architecture with a clear separation of concer
 * Image processing workflow
 * Video asset management
 
-### Security & Operational Resilience
+### Security, Validation & Operational Resilience
 
+* Declarative input validation (email format, username alphanumeric rules, password lengths, text bounds)
+* Strict MongoDB ObjectId validation on all route parameters
 * Security headers (Content-Security-Policy, nosniff, SAMEORIGIN, XSS protection)
 * Sliding-window rate limiting on API and authentication routes
 * HTTP request duration and access logging
 * Comprehensive health monitoring with MongoDB ping latency and memory stats
 * Container readiness probe endpoint (`/api/v1/healthcheck/ready`)
 * Graceful server shutdown on `SIGINT`/`SIGTERM` with clean DB disconnection
+* Automated unit & integration test suite (25 tests covering security, rate limits, parsing, validation, and auth)
 
 ---
 
