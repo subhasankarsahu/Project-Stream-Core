@@ -1,6 +1,9 @@
 import mongoose, {isValidObjectId} from "mongoose"
 import {Video} from "../models/video.model.js"
 import {User} from "../models/user.model.js"
+import {Like} from "../models/like.model.js"
+import {Comment} from "../models/comment.model.js"
+import {Subscription} from "../models/subscription.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
@@ -215,8 +218,28 @@ const getVideoById = asyncHandler(async (req, res) => {
         });
     }
 
+    const [likesCount, commentsCount, isLiked, subscribersCount, isSubscribed] = await Promise.all([
+        Like.countDocuments({ video: video._id }),
+        Comment.countDocuments({ video: video._id }),
+        req.user?._id ? Like.exists({ video: video._id, likedBy: req.user._id }) : false,
+        video.owner?._id ? Subscription.countDocuments({ channel: video.owner._id }) : 0,
+        req.user?._id && video.owner?._id ? Subscription.exists({ channel: video.owner._id, subscriber: req.user._id }) : false
+    ]);
+
+    const enrichedVideo = {
+        ...video.toObject(),
+        likesCount,
+        commentsCount,
+        isLiked: Boolean(isLiked),
+        owner: {
+            ...(video.owner?.toObject ? video.owner.toObject() : video.owner),
+            subscribersCount,
+            isSubscribed: Boolean(isSubscribed)
+        }
+    };
+
     return res.status(200).json(
-            new ApiResponse(200, "Video fetched successfully", video)
+            new ApiResponse(200, "Video fetched successfully", enrichedVideo)
     );
 });
 
