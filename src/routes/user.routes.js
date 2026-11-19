@@ -18,6 +18,11 @@ import {
 import { verifyJWT, optionalAuth } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { authRateLimiter } from "../middlewares/rateLimiter.middleware.js";
+import {
+    validateRegisterInput,
+    validateLoginInput,
+    validateObjectId
+} from "../middlewares/validation.middleware.js";
 
 const router = Router()
 
@@ -33,10 +38,11 @@ router.route("/register").post(
             maxCount: 1
         }
     ]),
+    validateRegisterInput,
     registerUser
 )
 
-router.route("/login").post(authRateLimiter, loginUser)
+router.route("/login").post(authRateLimiter, validateLoginInput, loginUser)
 
 // Secured routes
 router.route("/logout").post(verifyJWT, logoutUser)
@@ -48,6 +54,8 @@ router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvat
 router.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
 router.route("/c/:username").get(optionalAuth, getUserChannelProfile)
 router.route("/history").get(verifyJWT, getWatchHistory).delete(verifyJWT, clearWatchHistory)
-router.route("/history/:videoId").post(verifyJWT, addToWatchHistory).delete(verifyJWT, removeWatchHistoryItem)
+router.route("/history/:videoId")
+    .post(verifyJWT, validateObjectId("videoId"), addToWatchHistory)
+    .delete(verifyJWT, validateObjectId("videoId"), removeWatchHistoryItem)
 
 export default router

@@ -10,13 +10,14 @@ import {
 } from "../controllers/video.controller.js";
 import { verifyJWT, optionalAuth } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
+import { validateObjectId } from "../middlewares/validation.middleware.js";
 
 const router = Router();
 
 // Public / Guest accessible routes
 router.route("/").get(optionalAuth, getAllVideos);
 router.route("/trending").get(optionalAuth, getTrendingVideos);
-router.route("/:videoId").get(optionalAuth, getVideoById);
+router.route("/:videoId").get(optionalAuth, validateObjectId("videoId"), getVideoById);
 
 // Protected routes (require login)
 router.route("/").post(
@@ -36,9 +37,13 @@ router.route("/").post(
 
 router
     .route("/:videoId")
-    .delete(verifyJWT, deleteVideo)
-    .patch(verifyJWT, upload.single("thumbnail"), updateVideo);
+    .delete(verifyJWT, validateObjectId("videoId"), deleteVideo)
+    .patch(verifyJWT, validateObjectId("videoId"), upload.single("thumbnail"), updateVideo);
 
-router.route("/toggle/publish/:videoId").patch(verifyJWT, togglePublishStatus);
+router.route("/toggle/publish/:videoId").patch(
+    verifyJWT,
+    validateObjectId("videoId"),
+    togglePublishStatus
+);
 
 export default router;
