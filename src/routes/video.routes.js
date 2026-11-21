@@ -3,6 +3,7 @@ import {
     deleteVideo,
     getAllVideos,
     getRelatedVideos,
+    getSearchSuggestions,
     getTrendingVideos,
     getVideoById,
     publishAVideo,
@@ -18,6 +19,7 @@ const router = Router();
 // Public / Guest accessible routes
 router.route("/").get(optionalAuth, getAllVideos);
 router.route("/trending").get(optionalAuth, getTrendingVideos);
+router.route("/search/suggestions").get(optionalAuth, getSearchSuggestions);
 router.route("/:videoId/related").get(optionalAuth, validateObjectId("videoId"), getRelatedVideos);
 router.route("/:videoId").get(optionalAuth, validateObjectId("videoId"), getVideoById);
 

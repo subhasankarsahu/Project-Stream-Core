@@ -198,6 +198,48 @@ const getRelatedVideos = asyncHandler(async (req, res) => {
     );
 });
 
+const getSearchSuggestions = asyncHandler(async (req, res) => {
+    const { q } = req.query;
+
+    if (!q || typeof q !== "string" || q.trim().length < 2) {
+        return res.status(200).json(
+            new ApiResponse(200, "Search suggestions fetched successfully", [])
+        );
+    }
+
+    const queryText = q.trim();
+
+    const videoMatches = await Video.find({
+        isPublished: true,
+        title: { $regex: queryText, $options: "i" }
+    })
+    .select("title")
+    .limit(5);
+
+    const channelMatches = await User.find({
+        $or: [
+            { username: { $regex: queryText, $options: "i" } },
+            { fullname: { $regex: queryText, $options: "i" } }
+        ]
+    })
+    .select("username fullname avatar")
+    .limit(3);
+
+    const suggestions = [
+        ...videoMatches.map((v) => ({ type: "video", text: v.title, id: v._id })),
+        ...channelMatches.map((c) => ({
+            type: "channel",
+            text: c.fullname || c.username,
+            username: c.username,
+            avatar: c.avatar
+        }))
+    ];
+
+    return res.status(200).json(
+        new ApiResponse(200, "Search suggestions fetched successfully", suggestions)
+    );
+});
+
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description, category = "General" } = req.body;
 
@@ -417,6 +459,7 @@ export {
     getAllVideos,
     getTrendingVideos,
     getRelatedVideos,
+    getSearchSuggestions,
     publishAVideo,
     getVideoById,
     updateVideo,
