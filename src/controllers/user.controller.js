@@ -268,19 +268,25 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-  const { fullName, email } = req.body;
+  const { fullName, email, bio } = req.body;
 
   if (!fullName || !email) {
     throw new ApiError(400, 'All fields are required');
   }
 
+  const updateFields = {
+    fullname: fullName,
+    email: email,
+  };
+
+  if (bio !== undefined) {
+    updateFields.bio = typeof bio === 'string' ? bio.trim() : '';
+  }
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
-      $set: {
-        fullname: fullName,
-        email: email,
-      },
+      $set: updateFields,
     },
     { new: true }
   ).select('-password');
@@ -410,6 +416,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       $project: {
         fullname: 1,
         username: 1,
+        bio: 1,
         subscribersCount: 1,
         channelsSubscribedToCount: 1,
         isSubscribed: 1,

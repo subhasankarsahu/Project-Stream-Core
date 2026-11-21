@@ -25,6 +25,12 @@ const userSchema = new Schema(
       trim: true,
       index: true,
     },
+    bio: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 250,
+    },
     avatar: {
       type: String, // cloudinary public_id,
       required: true,
