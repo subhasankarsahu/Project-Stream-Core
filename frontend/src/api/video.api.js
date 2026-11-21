@@ -3,6 +3,7 @@ import http, { unwrap } from "./http"
 export const videoApi = {
   list: async (params = {}) => unwrap(await http.get("/videos/", { params })),
   trending: async (params = {}) => unwrap(await http.get("/videos/trending", { params })),
+  related: async (videoId) => unwrap(await http.get(`/videos/${videoId}/related`)),
   getById: async (videoId) => unwrap(await http.get(`/videos/${videoId}`)),
   create: async (formData) => unwrap(await http.post("/videos/", formData, { headers: { "Content-Type": "multipart/form-data" } })),
   update: async (videoId, formData) => unwrap(await http.patch(`/videos/${videoId}`, formData, { headers: { "Content-Type": "multipart/form-data" } })),

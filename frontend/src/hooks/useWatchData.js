@@ -54,5 +54,9 @@ export function useVideoInteraction(video, userId) {
 }
 
 export function useRelatedVideos(videoId) {
-  return useVideos({ page: 1, limit: 8, sortBy: "views", sortType: "desc" })
+  return useQuery({
+    queryKey: ["related-videos", videoId],
+    queryFn: () => videoApi.related(videoId),
+    enabled: Boolean(videoId),
+  })
 }

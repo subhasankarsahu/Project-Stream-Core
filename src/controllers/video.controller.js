@@ -149,6 +149,55 @@ const getTrendingVideos = asyncHandler(async (req, res) => {
     );
 });
 
+const getRelatedVideos = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid video id");
+    }
+
+    const currentVideo = await Video.findById(videoId);
+    if (!currentVideo) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    const keywords = (currentVideo.title || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, "")
+        .split(/\s+/)
+        .filter((w) => w.length >= 3);
+
+    const matchConditions = [
+        { owner: currentVideo.owner }
+    ];
+
+    if (currentVideo.category && currentVideo.category !== "General") {
+        matchConditions.push({ category: currentVideo.category });
+    }
+
+    if (keywords.length > 0) {
+        matchConditions.push({
+            title: {
+                $regex: keywords.slice(0, 3).join("|"),
+                $options: "i"
+            }
+        });
+    }
+
+    const relatedVideos = await Video.find({
+        _id: { $ne: currentVideo._id },
+        isPublished: true,
+        $or: matchConditions
+    })
+    .populate("owner", "username fullname avatar")
+    .sort({ views: -1, createdAt: -1 })
+    .limit(10);
+
+    return res.status(200).json(
+        new ApiResponse(200, "Related videos fetched successfully", relatedVideos)
+    );
+});
+
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description, category = "General" } = req.body;
 
@@ -367,6 +416,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 export {
     getAllVideos,
     getTrendingVideos,
+    getRelatedVideos,
     publishAVideo,
     getVideoById,
     updateVideo,
