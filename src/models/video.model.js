@@ -34,6 +34,12 @@ const videoSchema = new Schema(
       type: Number,
       default: 0,
     },
+    category: {
+      type: String,
+      default: "General",
+      trim: true,
+      index: true,
+    },
     isPublished: {
       type: Boolean,
       default: true,

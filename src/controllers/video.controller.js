@@ -11,7 +11,7 @@ import {uploadOnCloudinary, deleteFromCloudinary} from "../utils/cloudinary.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId, duration } = req.query;
+    const { page = 1, limit = 10, query, sortBy, sortType, userId, duration, category } = req.query;
 
     const parsedPage = Math.max(1, parseInt(page, 10) || 1);
     const parsedLimit = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
@@ -19,6 +19,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
     const matchStage = {
         isPublished: true
     };
+
+    if (category && category.trim().toLowerCase() !== "all") {
+        matchStage.category = new RegExp(`^${category.trim()}$`, "i");
+    }
 
     if (query?.trim()) {
         matchStage.$or = [
@@ -146,7 +150,7 @@ const getTrendingVideos = asyncHandler(async (req, res) => {
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description} = req.body;
+    const { title, description, category = "General" } = req.body;
 
     if(!title || !description) {
         throw new ApiError(400, "Title and description are required");
@@ -173,6 +177,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     const video = await Video.create({
         title,
         description,
+        category: category?.trim() || "General",
         videoFile: uploadedVideo.url,
         thumbnail: uploadedThumbnail.url,
         duration: uploadedVideo.duration,
@@ -284,6 +289,7 @@ const updateVideo = asyncHandler(async (req, res) => {
             $set: {
                 title: title || video.title,
                 description: description || video.description,
+                category: req.body.category !== undefined ? req.body.category.trim() : video.category,
                 thumbnail: thumbnailUrl
             }            
         },
