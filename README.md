@@ -40,19 +40,23 @@ The application follows a modular architecture with a clear separation of concer
 * Profile management
 * Avatar uploads and replacements
 * Cover image uploads and replacements
+* Creator channel biography (up to 250 characters)
 * Chronological watch history tracking and auto-recording
 * Watch history deletion and single-item removal
-* Channel profile pages
+* Channel profile pages with subscriber states
 
 ### Video Platform
 
-* Video publishing
+* Video publishing with category tagging
 * Thumbnail management
 * Video updates and deletion
 * Publish/unpublish functionality
 * Public guest browsing with optional authentication
 * Enriched video responses (`likesCount`, `commentsCount`, `isLiked`, subscriber stats)
-* Video discovery with duration filtering (`short`, `medium`, `long`)
+* Contextual related videos recommendation engine (keywords, owner, category matching)
+* Live search suggestions autocomplete endpoint (`/search/suggestions`)
+* Video discovery with category chips (`Music`, `Gaming`, `News`, `Tech`, etc.)
+* Video duration filtering (`short`, `medium`, `long`)
 * Trending videos discovery endpoint ranked by engagement
 * Channel-specific content
 * Bounded pagination and sanitized query sorting
@@ -60,7 +64,7 @@ The application follows a modular architecture with a clear separation of concer
 ### Community Features
 
 * Video likes with creator profile population
-* Comment likes
+* Comment likes with like count tracking and user like status
 * Tweet likes
 * Video comments with guest prompt
 * Creator subscriptions and status tracking
@@ -75,11 +79,11 @@ The application follows a modular architecture with a clear separation of concer
 * Remove videos from playlists
 * Public playlist sharing and channel playlist browsing
 
-### Dashboard
+### Dashboard & Analytics
 
-* Channel statistics
-* Subscriber counts
-* Video analytics
+* Channel statistics (total videos, published count, subscribers, views, likes, comments)
+* Top performing videos analytics (top 5 by views and engagement)
+* Subscriber counts and activity breakdown
 * Creator activity overview
 
 ### Media Handling & Lifecycle

@@ -3,7 +3,7 @@
 Base URL: `/api/v1`
 
 Successful responses use `{ statusCode, success, message, data }`. Errors use `{ success, message, errors }`.
-- **Public & Guest Access:** Read endpoints for videos, trending, comments, channel profiles, and playlists are accessible publicly without authentication. If an `accessToken` is provided, responses are personalized with user-specific interaction states (`isLiked`, `isSubscribed`, and watch history tracking).
+- **Public & Guest Access:** Read endpoints for videos, trending, search suggestions, related videos, comments, channel profiles, and playlists are accessible publicly without authentication. If an `accessToken` is provided, responses are personalized with user-specific interaction states (`isLiked`, `isSubscribed`, and watch history tracking).
 - **Protected Actions:** Write, update, and delete actions require the `accessToken` HttpOnly cookie or `Authorization: Bearer <token>`.
 
 ## Security & Resilience
@@ -15,6 +15,7 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
   - `username`: 3-30 characters, lowercase alphanumeric and underscores only (`/^[a-z0-9_]{3,30}$/`).
   - `email`: RFC-compliant email address format.
   - `password`: Minimum 6 characters.
+  - `bio`: Creator channel biography up to 250 characters.
   - Content length bounding: Tweets (1-280 chars), Comments (1-1000 chars), Playlists (name: 1-100 chars, desc: 1-1000 chars).
   - Route ObjectId validation: Strictly validates 24-character hexadecimal MongoDB ObjectIds before database execution.
 - **Security Headers:** Protects against MIME sniffing (`nosniff`), clickjacking (`SAMEORIGIN`), XSS (`1; mode=block`), and referrer leaks.
@@ -41,10 +42,10 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 | `/users/refresh-token` | POST | No | None | Optional JSON `refreshToken` when not using the cookie | `200`, refreshed token metadata; rotates cookies | Issues a new access/refresh token pair. |
 | `/users/change-password` | POST | Yes | None | JSON `oldPassword`, `newPassword` | `200`, empty data | Changes the authenticated user password. |
 | `/users/current-user` | GET | Yes | None | None | `200`, current user | Gets the authenticated user. |
-| `/users/update-account` | PATCH | Yes | None | JSON `fullName`, `email` | `200`, updated user | Updates account details. |
+| `/users/update-account` | PATCH | Yes | None | JSON `fullName`, `email`, optional `bio` (max 250 chars) | `200`, updated user | Updates account details and channel biography. |
 | `/users/avatar` | PATCH | Yes | Multipart field `avatar` | Image upload | `200`, updated user | Replaces avatar and removes old asset from Cloudinary. |
 | `/users/cover-image` | PATCH | Yes | Multipart field `coverImage` | Image upload | `200`, updated user | Replaces cover image and removes old asset from Cloudinary. |
-| `/users/c/:username` | GET | Optional | Path `username` | None | `200`, channel profile and subscription counts | Gets a channel profile. Returns `isSubscribed` if authenticated. |
+| `/users/c/:username` | GET | Optional | Path `username` | None | `200`, channel profile, bio, and subscription counts | Gets a channel profile. Returns `isSubscribed` if authenticated. |
 | `/users/history` | GET | Yes | None | None | `200`, watched videos array | Gets the user's chronological watch history. |
 | `/users/history` | DELETE | Yes | None | None | `200`, empty data | Clears the authenticated user's entire watch history. |
 | `/users/history/:videoId` | POST | Yes | Path `videoId` | None | `200`, `{ videoId }` | Records a video into the user's watch history. |
@@ -56,11 +57,13 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/videos/` | GET | Optional | Query `page`, `limit` (max 50), `query`, `sortBy`, `sortType`, `userId`, `duration` (`short` \| `medium` \| `long`) | None | `200`, aggregate pagination result | Lists published videos with bounded pagination and duration filters. |
+| `/videos/` | GET | Optional | Query `page`, `limit` (max 50), `query`, `sortBy`, `sortType`, `userId`, `category`, `duration` (`short` \| `medium` \| `long`) | None | `200`, aggregate pagination result | Lists published videos with category, duration, and query filters. |
 | `/videos/trending` | GET | Optional | Query `page`, `limit` | None | `200`, aggregate pagination result | Lists trending videos ranked by views and recency. |
-| `/videos/` | POST | Yes | Multipart fields `videoFile`, `thumbnail` | Multipart `title`, `description`, video and thumbnail files | `201`, created video | Publishes a video. |
+| `/videos/search/suggestions` | GET | Optional | Query `q` (min 2 chars) | None | `200`, suggestions array | Fast autocomplete suggestions matching video titles and creator channels. |
+| `/videos/:videoId/related` | GET | Optional | Path `videoId` | None | `200`, recommended videos array | Returns contextual related videos matching owner, category, or title keywords. |
+| `/videos/` | POST | Yes | Multipart fields `videoFile`, `thumbnail` | Multipart `title`, `description`, optional `category`, video and thumbnail files | `201`, created video | Publishes a video with category metadata. |
 | `/videos/:videoId` | GET | Optional | Path `videoId` | None | `200`, enriched video object with `likesCount`, `commentsCount`, `isLiked`, `owner.subscribersCount`, and `owner.isSubscribed` | Gets enriched video details, increments view count, and auto-records watch history if authenticated. |
-| `/videos/:videoId` | PATCH | Yes | Path `videoId`, multipart `thumbnail` optional | Optional JSON `title`, `description` and thumbnail | `200`, updated video | Updates an owned video and purges superseded thumbnails from Cloudinary. |
+| `/videos/:videoId` | PATCH | Yes | Path `videoId`, multipart `thumbnail` optional | Optional JSON `title`, `description`, `category` and thumbnail | `200`, updated video | Updates an owned video and purges superseded thumbnails from Cloudinary. |
 | `/videos/:videoId` | DELETE | Yes | Path `videoId` | None | `200`, empty data | Deletes an owned video and purges media files from Cloudinary. |
 | `/videos/toggle/publish/:videoId` | PATCH | Yes | Path `videoId` | None | `200`, updated video | Toggles publication status for an owned video. |
 
@@ -70,7 +73,7 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/comments/:videoId` | GET | Optional | Path `videoId`; query `page`, `limit` | None | `200`, comments array | Lists comments for a video publicly. |
+| `/comments/:videoId` | GET | Optional | Path `videoId`; query `page`, `limit` | None | `200`, comments array with `likesCount` and `isLiked` | Lists comments for a video with like metrics. |
 | `/comments/:videoId` | POST | Yes | Path `videoId` | JSON `content` (1-1000 chars) | `201`, created comment | Adds a comment to a video. |
 | `/comments/c/:commentId` | PATCH | Yes | Path `commentId` | JSON `content` (1-1000 chars) | `200`, updated comment | Updates an owned comment. |
 | `/comments/c/:commentId` | DELETE | Yes | Path `commentId` | None | `200`, empty data | Deletes an owned comment. |
@@ -128,5 +131,6 @@ Successful responses use `{ statusCode, success, message, data }`. Errors use `{
 
 | Endpoint | Method | Auth | Parameters | Body | Success response | Description |
 |---|---|---|---|---|---|---|
-| `/dashboard/stats` | GET | Yes | None | None | `200`, video, subscriber, view, and like totals | Gets channel statistics for the authenticated user. |
-| `/dashboard/videos` | GET | Yes | None | None | `200`, owned videos | Lists the authenticated user's videos. |
+| `/dashboard/stats` | GET | Yes | None | None | `200`, videos, published count, subscribers, views, likes, and comments totals | Gets comprehensive channel performance metrics. |
+| `/dashboard/videos` | GET | Yes | None | None | `200`, owned videos | Lists the authenticated user's uploaded videos. |
+| `/dashboard/top-videos` | GET | Yes | None | None | `200`, top 5 performing videos | Returns creator's top 5 videos ranked by views and engagement. |
